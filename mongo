@@ -1,7 +1,0 @@
-#!/bin/bash
-
-docker run \
-    --name cartrax-mongo \
-    --hostname cartrax-mongo \
-    -dp 27017:27017 \
-    mongo:latest

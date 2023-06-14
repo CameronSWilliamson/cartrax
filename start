@@ -1,0 +1,21 @@
+#!/bin/bash
+
+function mongo {
+    mongoCount=$(docker ps | grep mongo | wc -l)
+    target=1
+    if [ $mongoCount -ne $target ]; then
+        docker run \
+            --name cartrax-mongo \
+            --hostname cartrax-mongo \
+            -dp 27017:27017 \
+            mongo:latest
+    fi
+}
+
+mongo
+
+case "$1" in
+    release) cargo run --release;;
+    doc) cargo doc --open;;
+    dev) cargo run;;
+esac

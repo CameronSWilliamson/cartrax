@@ -26,3 +26,15 @@ jobs:
       with:
         name: cartrax-api-release
         path: target/release/cartraxapi
+
+    - name: Build Docs
+      run: /root/.cargo/bin/cargo doc
+
+    - name: Compress Docs
+      run: tar -C target/ -czvf docs.tar.gz doc 
+
+    - name: Save Artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: docs.tar.gz
+        path: docs.tar.gz
