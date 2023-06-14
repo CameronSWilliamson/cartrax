@@ -1,20 +1,20 @@
-use std::{ops::Deref, sync::Mutex};
+use std::{error::Error, sync::Mutex};
 
 use actix_web::{get, post, web, Responder};
 
-use crate::models::*;
+use crate::{database::Database, models::*};
 
-struct AppState {
+struct _AppState {
     details: Mutex<Vec<GasInfo>>,
 }
 
 #[post("/")]
 async fn post_trax_data(
-    data: web::Data<AppState>,
+    data: web::Data<Database>,
     gas_info: web::Json<GasInfo>,
-) -> actix_web::Result<impl Responder> {
-    let mut detail_list = data.details.lock().unwrap();
-    detail_list.push(gas_info.into_inner());
+) -> Result<impl Responder, Box<dyn Error>> {
+    println!("Getting Data");
+    data.add_data(gas_info.into_inner()).await?;
     Ok(web::Json(ResponseMessage {
         status: ResponseStatus::Success,
         message: String::from("Successfully Added Item"),
@@ -22,16 +22,13 @@ async fn post_trax_data(
 }
 
 #[get("/")]
-async fn get_trax_data(data: web::Data<AppState>) -> actix_web::Result<impl Responder> {
-    let detail_list = data.details.lock().unwrap();
-    Ok(web::Json(detail_list.deref().clone()))
+async fn get_trax_data(data: web::Data<Database>) -> Result<impl Responder, Box<dyn Error>> {
+    let detail_list = data.get_data().await?;
+    Ok(web::Json(detail_list))
 }
 
 pub fn config(cfg: &mut web::ServiceConfig) {
     let scope = web::scope("/cartrax")
-        .app_data(web::Data::new(AppState {
-            details: Mutex::new(Vec::new()),
-        }))
         .service(post_trax_data)
         .service(get_trax_data);
     cfg.service(scope);

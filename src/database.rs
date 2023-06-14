@@ -1,34 +1,59 @@
-use mongodb::{Client, Collection, error::Result, options::IndexOptions};
+use std::sync::{Arc, Mutex};
+
 use crate::models::GasInfo;
+use futures::StreamExt;
+use mongodb::{options::IndexOptions, Client, Collection};
 
 const DB_NAME: &str = "HomeDB";
 const COLL_NAME: &str = "cartrax";
 
-struct Database {
-    client: Client,
+#[derive(Clone)]
+pub struct Database {
+    client: Arc<Mutex<Client>>,
 }
 
 impl Database {
-    async fn new() -> Database {
+    pub async fn new() -> Database {
         let uri =
             std::env::var("MONGODB_URI").unwrap_or_else(|_| "mongodb://localhost:27017".into());
         let client = Client::with_uri_str(uri).await.expect("failed to connect");
-        Database { client }
+        Database {
+            client: Arc::new(Mutex::new(client)),
+        }
     }
 
-    async fn create_idx(&self) {
+    pub async fn create_idx(&self) {
         let options = IndexOptions::builder().unique(true);
     }
 
-    async fn add_data(&self, data: GasInfo) -> Result<()> {
-        let collection = self.client.database(DB_NAME).collection(COLL_NAME);
+    pub async fn add_data(&self, data: GasInfo) -> mongodb::error::Result<()> {
+        let collection = self
+            .client
+            .lock()
+            .unwrap()
+            .database(DB_NAME)
+            .collection(COLL_NAME);
         collection.insert_one(data, None).await?;
         Ok(())
     }
 
-    async fn get_data(&self, data: GasInfo) -> Result<Vec<GasInfo>> {
-        let collection: Collection<GasInfo> = self.client.database(DB_NAME).collection(COLL_NAME);
-        let data = collection.find(None, None).await?;
-        data.collect();
+    pub async fn get_data(&self) -> Result<Vec<GasInfo>, Box<dyn std::error::Error>> {
+        let collection: Collection<GasInfo> = self
+            .client
+            .lock()
+            .unwrap()
+            .database(DB_NAME)
+            .collection(COLL_NAME);
+        let mut cursor = collection.find(None, None).await?;
+        let mut data = Vec::new();
+
+        while let Some(result) = cursor.next().await {
+            match result {
+                Ok(document) => data.push(document),
+                _ => {}
+            }
+        }
+
+        Ok(data)
     }
 }
