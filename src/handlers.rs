@@ -1,6 +1,11 @@
 use std::{error::Error, sync::Mutex};
 
-use actix_web::{get, post, web, Responder};
+use actix_web::{
+    dev::Service,
+    get, post,
+    web::{self, Data, ServiceConfig},
+    Responder,
+};
 
 use crate::{database::Database, models::*};
 
@@ -27,9 +32,12 @@ async fn get_trax_data(data: web::Data<Database>) -> Result<impl Responder, Box<
     Ok(web::Json(detail_list))
 }
 
-pub fn config(cfg: &mut web::ServiceConfig) {
-    let scope = web::scope("/cartrax")
-        .service(post_trax_data)
-        .service(get_trax_data);
-    cfg.service(scope);
+pub fn config(database: Database) -> impl FnOnce(&mut web::ServiceConfig) -> () {
+    return |cfg: &mut web::ServiceConfig| {
+        let scope = web::scope("/cartrax")
+            .app_data(Data::new(database))
+            .service(post_trax_data)
+            .service(get_trax_data);
+        cfg.service(scope);
+    };
 }
