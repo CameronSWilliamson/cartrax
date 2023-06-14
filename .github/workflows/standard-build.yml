@@ -17,6 +17,6 @@ jobs:
     - name: Install Cargo
       run: curl https://sh.rustup.rs -sSf | sh -s -- -y
     - name: Build
-      run: cargo build --verbose
+      run: /root/.cargo/bin/cargo build --verbose
     - name: Run Tests
-      run: cargo test --verbose
+      run: /root/.cargo/bin/cargo test --verbose
