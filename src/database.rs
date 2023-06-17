@@ -2,7 +2,7 @@ use std::sync::{Arc, Mutex};
 
 use crate::models::GasInfo;
 use futures::StreamExt;
-use mongodb::{options::IndexOptions, Client, Collection};
+use mongodb::{Client, Collection};
 
 const DB_NAME: &str = "HomeDB";
 const COLL_NAME: &str = "cartrax";
@@ -22,18 +22,16 @@ impl Database {
         }
     }
 
-    pub async fn create_idx(&self) {
-        let options = IndexOptions::builder().unique(true);
-    }
-
-    pub async fn add_data(&self, data: GasInfo) -> mongodb::error::Result<()> {
+    pub async fn add_data(&self, data: &mut GasInfo) -> mongodb::error::Result<()> {
         let collection = self
             .client
             .lock()
             .unwrap()
             .database(DB_NAME)
             .collection(COLL_NAME);
-        collection.insert_one(data, None).await?;
+        let count = collection.count_documents(None, None).await?;
+        data.id = Some(count as u32);
+        collection.insert_one(data.clone(), None).await?;
         Ok(())
     }
 
@@ -48,9 +46,8 @@ impl Database {
         let mut data = Vec::new();
 
         while let Some(result) = cursor.next().await {
-            match result {
-                Ok(document) => data.push(document),
-                _ => {}
+            if let Ok(document) = result {
+                data.push(document)
             }
         }
 

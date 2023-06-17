@@ -2,7 +2,7 @@ mod database;
 mod handlers;
 mod models;
 
-use actix_web::{web::Data, App, HttpServer};
+use actix_web::{App, HttpServer};
 use database::Database;
 
 #[actix_web::main]

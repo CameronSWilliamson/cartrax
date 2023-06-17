@@ -1,17 +1,12 @@
-use std::{error::Error, sync::Mutex};
+use std::error::Error;
 
 use actix_web::{
-    dev::Service,
     get, post,
-    web::{self, Data, ServiceConfig},
+    web::{self, Data},
     Responder,
 };
 
 use crate::{database::Database, models::*};
-
-struct _AppState {
-    details: Mutex<Vec<GasInfo>>,
-}
 
 #[post("/")]
 async fn post_trax_data(
@@ -19,10 +14,13 @@ async fn post_trax_data(
     gas_info: web::Json<GasInfo>,
 ) -> Result<impl Responder, Box<dyn Error>> {
     println!("Getting Data");
-    data.add_data(gas_info.into_inner()).await?;
+    let mut gas_info = gas_info.into_inner();
+    data.add_data(&mut gas_info).await?;
+    let id = gas_info.id.unwrap();
+
     Ok(web::Json(ResponseMessage {
         status: ResponseStatus::Success,
-        message: String::from("Successfully Added Item"),
+        data: ResponseType::from(format!("Successfully added item with an ID of {id}")),
     }))
 }
 
@@ -32,12 +30,12 @@ async fn get_trax_data(data: web::Data<Database>) -> Result<impl Responder, Box<
     Ok(web::Json(detail_list))
 }
 
-pub fn config(database: Database) -> impl FnOnce(&mut web::ServiceConfig) -> () {
-    return |cfg: &mut web::ServiceConfig| {
+pub fn config(database: Database) -> impl FnOnce(&mut web::ServiceConfig) {
+    |cfg: &mut web::ServiceConfig| {
         let scope = web::scope("/cartrax")
             .app_data(Data::new(database))
             .service(post_trax_data)
             .service(get_trax_data);
         cfg.service(scope);
-    };
+    }
 }

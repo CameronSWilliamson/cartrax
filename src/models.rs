@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct GasInfo {
-    pub entry_num: Option<u32>,
+    pub id: Option<u32>,
     pub price_per_gallon: f32,
     pub total_price: f32,
     pub gallons: f32,
@@ -19,7 +19,25 @@ pub struct GasInfo {
 #[serde(rename_all = "camelCase")]
 pub struct ResponseMessage {
     pub status: ResponseStatus,
-    pub message: String,
+    pub data: ResponseType,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub enum ResponseType {
+    Message(String),
+    GasInfo(GasInfo),
+}
+
+impl From<String> for ResponseType {
+    fn from(value: String) -> Self {
+        ResponseType::Message(value)
+    }
+}
+
+impl From<GasInfo> for ResponseType {
+    fn from(value: GasInfo) -> Self {
+        ResponseType::GasInfo(value)
+    }
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
