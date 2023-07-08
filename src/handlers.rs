@@ -14,8 +14,8 @@ async fn post_trax_data(
     gas_info: web::Json<GasInfo>,
 ) -> Result<impl Responder, Box<dyn Error>> {
     println!("Getting Data");
-    let mut gas_info = gas_info.into_inner();
-    data.add_data(&mut gas_info).await?;
+    let gas_info = gas_info.into_inner();
+    //data.add_data(&mut gas_info).await?;
     let id = gas_info.id.unwrap();
 
     Ok(web::Json(ResponseMessage {
@@ -26,7 +26,8 @@ async fn post_trax_data(
 
 #[get("/")]
 async fn get_trax_data(data: web::Data<Database>) -> Result<impl Responder, Box<dyn Error>> {
-    let detail_list = data.get_data().await?;
+    //let detail_list = data.get_data().await?;
+    let detail_list = vec![1];
     Ok(web::Json(detail_list))
 }
 
