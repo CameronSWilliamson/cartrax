@@ -1,18 +1,19 @@
 #!/bin/bash
 
-function mongo {
-    mongoCount=$(docker ps | grep mongo | wc -l)
+function postgres {
+    postgresCount=$(docker ps | grep postgres | wc -l)
     target=1
-    if [ $mongoCount -ne $target ]; then
+    if [ $postgresCount -ne $target ]; then
         docker run \
-            --name cartrax-mongo \
-            --hostname cartrax-mongo \
-            -dp 27017:27017 \
-            mongo:latest
+            --name cartrax-postgres \
+            --hostname cartrax-postgres \
+            -e POSTGRES_PASSWORD=password
+            -dp 5432:5432 \
+            postgres:latest
     fi
 }
 
-mongo
+postgres
 
 case "$1" in
     release) cargo run --release;;
