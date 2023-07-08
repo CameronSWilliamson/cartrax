@@ -1,14 +1,13 @@
 use std::error::Error;
-
 use actix_web::{
     get, post,
     web::{self, Data},
     Responder,
 };
 use chrono::Utc;
-
 use crate::{database::Database, models::*};
 
+/// Handles adding GasInfo data.
 #[post("/")]
 async fn post_trax_data(
     data: web::Data<Database>,
@@ -29,6 +28,7 @@ async fn post_trax_data(
     }))
 }
 
+/// Handles getting GasInfo data.
 #[get("/")]
 async fn get_trax_data(data: web::Data<Database>) -> Result<impl Responder, Box<dyn Error>> {
     let database = data.into_inner();
@@ -39,6 +39,11 @@ async fn get_trax_data(data: web::Data<Database>) -> Result<impl Responder, Box<
     Ok(web::Json(detail_list))
 }
 
+/// Configures the `/cartrax` endpoints.
+///
+/// # Arguments
+///
+/// * `database` - The ActixWeb database to be provided to all endpoints
 pub fn config(database: Database) -> impl FnOnce(&mut web::ServiceConfig) {
     |cfg: &mut web::ServiceConfig| {
         let scope = web::scope("/cartrax")

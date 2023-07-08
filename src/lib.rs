@@ -1,6 +1,6 @@
-mod database;
-mod handlers;
-mod models;
+pub mod database;
+pub mod handlers;
+pub mod models;
 
 use std::{fs::File, io::BufReader, process::exit};
 
@@ -9,28 +9,35 @@ use clap::{Parser, Subcommand};
 use database::DataPool;
 use models::GasInfo;
 
+/// The commandline arguments allowed for this program
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
 pub struct Cli {
     #[command(subcommand)]
+    /// Subcommands that allow for different functionality
     pub command: Option<Commands>,
 }
 
+/// Subcommands that change the functionality of the program
 #[derive(Subcommand)]
 pub enum Commands {
-    /// Creates new tables in the database
+    /// Creates new tables in the database. If a filename is provided
+    /// then it will read a CSV file and store that in the database as well
     Migrate {
         /// The file to migrate data from
         filename: Option<String>,
     },
-    /// Starts the API. This is also the default mode
+    /// Starts the API. This is also the default mode.
     Api {},
+    /// Makes a copy of all of the data in the database in a CSV file with
+    /// the provided filename.
     Backup {
         /// The file to backup data to
-        filename: String
+        filename: String,
     },
 }
 
+/// Configures and runs the API.
 pub async fn run_api() -> std::io::Result<()> {
     std::env::set_var("RUST_LOG", "debug");
     env_logger::init();
@@ -46,7 +53,12 @@ pub async fn run_api() -> std::io::Result<()> {
     Ok(())
 }
 
-pub async fn run_backup(filename :&String) -> std::io::Result<()> {
+/// Copies all data in the database to a file with the provided filename
+///
+/// # Arguments
+///
+/// * `filename` - The name of the CSV file to store the data in
+pub async fn run_backup(filename: &String) -> std::io::Result<()> {
     let pool = DataPool::new(true).await;
     if let Err(error) = pool {
         println!("Failed to connect to database: {}", error.to_string());
@@ -69,6 +81,13 @@ pub async fn run_backup(filename :&String) -> std::io::Result<()> {
     Ok(())
 }
 
+/// Creates new tables in the database. If a filename is provided then
+/// the file is read as a CSV file and all data from the file is uploaded to
+/// the database
+///
+/// # Arguments
+///
+/// * `filename` - An optional string that holds the name of the file to read from
 pub async fn run_migration(filename: &Option<String>) -> std::io::Result<()> {
     let pool = DataPool::new(true).await;
     if let Err(error) = pool {
@@ -100,6 +119,11 @@ pub async fn run_migration(filename: &Option<String>) -> std::io::Result<()> {
     Ok(())
 }
 
+/// Creates the required tables in the database.
+///
+/// # Arguments
+///
+/// * `pool` - The SQLX data pool
 async fn create_tables(pool: &DataPool) -> Result<(), sqlx::Error> {
     let fields = "
         id SERIAL PRIMARY KEY NOT NULL,

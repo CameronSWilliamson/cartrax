@@ -1,15 +1,16 @@
 use std::sync::{Arc, Mutex};
-
 use sqlx::{postgres::PgPoolOptions, Pool, Postgres};
-
 use crate::models::GasInfo;
 
+/// The Arctix Database
 #[derive(Clone)]
 pub struct Database {
+    /// A client containing a DataPool
     pub client: Arc<Mutex<DataPool>>,
 }
 
 impl Database {
+    /// Returns a new Database instance
     pub async fn new() -> Result<Database, sqlx::Error> {
         Ok(Database {
             client: Arc::new(Mutex::new(DataPool::new(false).await?)),
@@ -17,13 +18,22 @@ impl Database {
     }
 }
 
+/// A PostgreSQL database connection
 #[derive(Clone)]
 pub struct DataPool {
+    /// The pool that connects to postgres
     pub pg: Pool<Postgres>,
+    /// Determines if all operations should be forced.
+    /// This should be set to false while running the API
     force: bool,
 }
 
 impl DataPool {
+    /// Returns a new DataPool containing a PostgreSQL connection pool.
+    ///
+    /// # Arguments
+    ///
+    /// * `force` - Whether or not all operations on the DataPool should be forced
     pub async fn new(force: bool) -> Result<DataPool, sqlx::Error> {
         let pool = PgPoolOptions::new()
             .max_connections(5)
@@ -32,6 +42,11 @@ impl DataPool {
         Ok(DataPool { pg: pool, force })
     }
 
+    /// Returns whether or not the provided table_name exists.
+    ///
+    /// # Arguments
+    ///
+    /// * `table_name` - The name of the table
     pub async fn _table_exists(&self, table_name: &str) -> Result<bool, sqlx::Error> {
         let exists: (bool,) = sqlx::query_as(
             "
@@ -48,6 +63,12 @@ impl DataPool {
         Ok(exists.0)
     }
 
+    /// Creates a table in the database with the provided name and schema.
+    ///
+    /// # Arguments
+    ///
+    /// * `table_name` - The name of the table to be created
+    /// * `fields` - The names and types of all fields to be created
     pub async fn create_table(&self, table_name: &str, fields: &str) -> Result<(), sqlx::Error> {
         let command = if self.force {
             sqlx::query(format!("DROP TABLE IF EXISTS {}", table_name).as_str())
@@ -67,6 +88,12 @@ impl DataPool {
         Ok(())
     }
 
+    /// Adds an entry to the gas info table. The id field on the GasInfo struct
+    /// will be ignored.
+    ///
+    /// # Arguments
+    ///
+    /// * `gas_info` - The entry to be added.
     pub async fn insert_gas_info(&self, gas_info: &GasInfo) -> Result<i32, sqlx::Error> {
         let id: (i32,) = sqlx::query_as(
             "INSERT INTO cartrax 
