@@ -20,11 +20,13 @@ pub struct Cli {
 pub enum Commands {
     /// Creates new tables in the database
     Migrate {
+        /// The file to migrate data from
         filename: Option<String>,
     },
     /// Starts the API. This is also the default mode
     Api {},
     Backup {
+        /// The file to backup data to
         filename: String
     },
 }
@@ -90,7 +92,7 @@ pub async fn run_migration(filename: &Option<String>) -> std::io::Result<()> {
             let record: GasInfo = entry?;
             match pool.insert_gas_info(&record).await {
                 Err(_) => println!("Failed to add entry on line {counter}"),
-                Ok(id) => (),
+                Ok(_) => (),
             }
             counter += 1;
         }

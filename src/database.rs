@@ -15,12 +15,6 @@ impl Database {
             client: Arc::new(Mutex::new(DataPool::new(false).await?)),
         })
     }
-
-    pub async fn forced() -> Result<Database, sqlx::Error> {
-        Ok(Database {
-            client: Arc::new(Mutex::new(DataPool::new(true).await?)),
-        })
-    }
 }
 
 #[derive(Clone)]
@@ -38,16 +32,17 @@ impl DataPool {
         Ok(DataPool { pg: pool, force })
     }
 
-    pub async fn table_exists(&self, table_name: &str) -> Result<bool, sqlx::Error> {
+    pub async fn _table_exists(&self, table_name: &str) -> Result<bool, sqlx::Error> {
         let exists: (bool,) = sqlx::query_as(
             "
             SELECT EXISTS (
                 SELECT 
                 FROM information_schema.tables
                 WHERE table_schema = 'test'
-                AND   table_name = 'mytesttable'
+                AND   table_name = $1
             )",
         )
+        .bind(table_name)
         .fetch_one(&self.pg)
         .await?;
         Ok(exists.0)
