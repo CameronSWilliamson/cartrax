@@ -442,8 +442,8 @@ dependencies = [
 ]
 
 [[package]]
-name = "cartraxapi"
-version = "0.1.0"
+name = "cartrax"
+version = "1.0.0"
 dependencies = [
  "actix-web",
  "bigdecimal",

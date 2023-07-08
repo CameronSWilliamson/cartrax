@@ -1,4 +1,4 @@
-use cartraxapi::{Cli, Commands};
+use cartrax::{run_api, run_backup, run_migration, Cli, Commands};
 use clap::Parser;
 //use database::migrate;
 
@@ -11,9 +11,9 @@ async fn main() -> std::io::Result<()> {
     }
 
     match &cli.command.unwrap() {
-        Commands::Api {} => cartraxapi::run_api().await?,
-        Commands::Migrate { filename } => cartraxapi::run_migration(filename).await?,
-        Commands::Backup { filename } => cartraxapi::run_backup(filename).await?,
+        Commands::Api {} => run_api().await?,
+        Commands::Migrate { filename } => run_migration(filename).await?,
+        Commands::Backup { filename } => run_backup(filename).await?,
     }
     Ok(())
 }
