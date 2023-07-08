@@ -12,7 +12,8 @@ async fn main() -> std::io::Result<()> {
 
     match &cli.command.unwrap() {
         Commands::Api {} => cartraxapi::run_api().await?,
-        Commands::Migrate {filename} => cartraxapi::run_migration(filename).await?,
+        Commands::Migrate { filename } => cartraxapi::run_migration(filename).await?,
+        Commands::Backup { filename } => cartraxapi::run_backup(filename).await?,
     }
     Ok(())
 }

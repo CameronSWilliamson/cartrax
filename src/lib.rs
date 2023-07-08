@@ -20,11 +20,13 @@ pub struct Cli {
 pub enum Commands {
     /// Creates new tables in the database
     Migrate {
-        #[arg(short, long)]
         filename: Option<String>,
     },
     /// Starts the API. This is also the default mode
     Api {},
+    Backup {
+        filename: String
+    },
 }
 
 pub async fn run_api() -> std::io::Result<()> {
@@ -39,6 +41,29 @@ pub async fn run_api() -> std::io::Result<()> {
     } else {
         println!("Failed to connect to database");
     }
+    Ok(())
+}
+
+pub async fn run_backup(filename :&String) -> std::io::Result<()> {
+    let pool = DataPool::new(true).await;
+    if let Err(error) = pool {
+        println!("Failed to connect to database: {}", error.to_string());
+        exit(1);
+    }
+    let pool = pool.unwrap();
+    let mut file = File::create(filename)?;
+    let mut csv_writer = csv::Writer::from_writer(&mut file);
+    let detail_list = sqlx::query_as::<_, GasInfo>("SELECT * FROM cartrax ORDER BY id")
+        .fetch_all(&pool.pg)
+        .await;
+    if let Err(error) = detail_list {
+        println!("Failed to fetch data: {}", error.to_string());
+        exit(1);
+    }
+    for entry in detail_list.unwrap() {
+        csv_writer.serialize(entry)?;
+    }
+    csv_writer.flush()?;
     Ok(())
 }
 
@@ -63,10 +88,9 @@ pub async fn run_migration(filename: &Option<String>) -> std::io::Result<()> {
         let mut counter = 2;
         for entry in csv_reader.deserialize() {
             let record: GasInfo = entry?;
-            println!("{:?}", record);
             match pool.insert_gas_info(&record).await {
                 Err(_) => println!("Failed to add entry on line {counter}"),
-                Ok(id) => println!("Successfully added entry {id}"),
+                Ok(id) => (),
             }
             counter += 1;
         }
