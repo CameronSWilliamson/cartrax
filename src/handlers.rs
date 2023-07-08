@@ -21,27 +21,7 @@ async fn post_trax_data(
     }
     let database = data.into_inner();
     let client = database.client.lock().unwrap();
-    let id: (i32,) = sqlx::query_as(
-        "INSERT INTO cartrax 
-        (price_per_gallon, total_cost, gallons, a_tripometer,
-         b_tripometer, total_tripometer, time_recorded, city, state)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-        RETURNING id;",
-    )
-    .bind(gas_info.price_per_gallon)
-    .bind(gas_info.total_cost)
-    .bind(gas_info.gallons)
-    .bind(gas_info.a_tripometer)
-    .bind(gas_info.b_tripometer)
-    .bind(gas_info.total_tripometer)
-    .bind(gas_info.time_recorded)
-    .bind(gas_info.city)
-    .bind(gas_info.state)
-    .fetch_one(&client.pg)
-    .await?;
-
-    //let id = gas_info.id.unwrap();
-    let id = id.0;
+    let id = client.insert_gas_info(&gas_info).await?;
 
     Ok(web::Json(ResponseMessage {
         status: ResponseStatus::Success,
