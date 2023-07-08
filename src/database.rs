@@ -23,7 +23,7 @@ impl Database {
 
 #[derive(Clone)]
 pub struct DataPool {
-    pg: Pool<Postgres>,
+    pub pg: Pool<Postgres>,
     force: bool,
 }
 
@@ -52,15 +52,42 @@ impl DataPool {
     }
 
     pub async fn create_table(&self, table_name: &str, fields: &str) -> Result<(), sqlx::Error> {
+        let command = if self.force {
+            sqlx::query(format!("DROP TABLE IF EXISTS {}", table_name).as_str())
+                .execute(&self.pg)
+                .await?;
+            "CREATE TABLE"
+        } else {
+            "CREATE TABLE IF NOT EXISTS"
+        };
         let sql_string = format!(
-            "
-            CREATE TABLE IF NOT EXISTS {} (
-                {}
-            );",
-            table_name, fields
+            "{} {} (
+                    {}
+                );",
+            command, table_name, fields
         );
         sqlx::query(&sql_string).execute(&self.pg).await?;
 
         Ok(())
     }
+}
+
+pub async fn migrate() -> Result<(), sqlx::Error> {
+    let pool = DataPool::new(true).await?;
+
+    let fields = "
+        id SERIAL PRIMARY KEY NOT NULL,
+        price_per_gallon NUMERIC(5, 3) NOT NULL,
+        total_cost NUMERIC(6, 2) NOT NULL,
+        gallons NUMERIC(5, 3) NOT NULL,
+        a_tripometer NUMERIC(8, 1) NOT NULL,
+        b_tripometer NUMERIC(8, 1) NOT NULL,
+        total_tripometer INTEGER NOT NULL,
+        time_recorded TIMESTAMPTZ NOT NULL,
+        city TEXT NOT NULL,
+        state TEXT NOT NULL
+        ";
+
+    pool.create_table("cartrax", fields).await?;
+    Ok(())
 }

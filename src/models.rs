@@ -1,16 +1,17 @@
+use bigdecimal::BigDecimal;
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, sqlx::FromRow)]
 #[serde(rename_all = "camelCase")]
 pub struct GasInfo {
-    pub id: Option<u32>,
-    pub price_per_gallon: f32,
-    pub total_price: f32,
-    pub gallons: f32,
-    pub trip_a: f32,
-    pub trip_b: f32,
-    pub mileage: i32,
-    pub date: String,
+    pub id: Option<i32>,
+    pub price_per_gallon: BigDecimal,
+    pub total_cost: BigDecimal,
+    pub gallons: BigDecimal,
+    pub a_tripometer: BigDecimal,
+    pub b_tripometer: BigDecimal,
+    pub total_tripometer: i32,
+    pub time_recorded: Option<chrono::DateTime<chrono::Utc>>,
     pub city: String,
     pub state: String,
 }

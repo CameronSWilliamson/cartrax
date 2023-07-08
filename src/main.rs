@@ -4,6 +4,7 @@ mod models;
 
 use actix_web::{App, HttpServer};
 use clap::{Parser, Subcommand};
+use database::migrate;
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
@@ -29,20 +30,27 @@ async fn main() -> std::io::Result<()> {
     }
 
     match &cli.command.unwrap() {
-        Commands::Api {} => {}
-        Commands::Migrate {} => {}
+        Commands::Api {} => {
+            std::env::set_var("RUST_LOG", "debug");
+            env_logger::init();
+
+            if let Ok(database) = database::Database::new().await {
+                HttpServer::new(move || App::new().configure(handlers::config(database.clone())))
+                    .bind(("localhost", 8080))?
+                    .run()
+                    .await?
+            } else {
+                println!("Failed to connect to database");
+            }
+        }
+        Commands::Migrate {} => {
+            if let Err(error) = database::migrate().await {
+                println!("Failed to migrate database: {}", error.to_string())
+            } else {
+                println!("Successfully migrated database");
+            }
+        }
     }
 
-    std::env::set_var("RUST_LOG", "debug");
-    env_logger::init();
-
-    if let Ok(database) = database::Database::new().await {
-        HttpServer::new(move || App::new().configure(handlers::config(database.clone())))
-            .bind(("localhost", 8080))?
-            .run()
-            .await?
-    } else {
-        println!("Failed to connect to database");
-    }
     Ok(())
 }
