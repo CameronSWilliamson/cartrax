@@ -2,23 +2,23 @@ name: Standard Build
 
 on:
   push:
-    branches: ["main", "dev"]
+    branches: 
+      - '**'
   pull_request:
-    branches: ["main", "dev"]
+    branches:
+      - '**'
 
 env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  build:
+  Build-Backend:
     runs-on: self-hosted
     steps:
     - uses: actions/checkout@v3
     - name: Install Cargo
       run: curl https://sh.rustup.rs -sSf | sh -s -- -y
-    - name: Change to backend directory
-      run: cd backend
     - name: Build
-      run: /root/.cargo/bin/cargo build --verbose
+      run: cd backend && /root/.cargo/bin/cargo build --verbose
     - name: Run Tests
-      run: /root/.cargo/bin/cargo test --verbose
+      run: cd backend && /root/.cargo/bin/cargo test --verbose
