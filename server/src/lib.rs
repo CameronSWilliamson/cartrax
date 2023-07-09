@@ -4,6 +4,7 @@ pub mod models;
 
 use std::{fs::File, io::BufReader, process::exit};
 
+use actix_cors::Cors;
 use actix_web::{App, HttpServer};
 use clap::{Parser, Subcommand};
 use database::DataPool;
@@ -43,10 +44,16 @@ pub async fn run_api() -> std::io::Result<()> {
     env_logger::init();
 
     if let Ok(database) = database::Database::new().await {
-        HttpServer::new(move || App::new().configure(handlers::config(database.clone())))
-            .bind(("localhost", 8080))?
-            .run()
-            .await?
+        HttpServer::new(move || {
+            let cors = Cors::permissive();
+            App::new()
+                .configure(handlers::config(database.clone()))
+                .service(handlers::index)
+                .wrap(cors)
+        })
+        .bind(("localhost", 8080))?
+        .run()
+        .await?
     } else {
         println!("Failed to connect to database");
     }

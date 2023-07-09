@@ -1,6 +1,6 @@
-use std::sync::{Arc, Mutex};
-use sqlx::{postgres::PgPoolOptions, Pool, Postgres};
 use crate::models::GasInfo;
+use sqlx::{postgres::PgPoolOptions, Pool, Postgres};
+use std::sync::{Arc, Mutex};
 
 /// The Arctix Database
 #[derive(Clone)]
