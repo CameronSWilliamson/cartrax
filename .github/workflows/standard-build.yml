@@ -22,3 +22,12 @@ jobs:
       run: cd backend && /root/.cargo/bin/cargo build --verbose
     - name: Run Tests
       run: cd backend && /root/.cargo/bin/cargo test --verbose
+
+  Builds-Frontend:
+    runs-on: self-hosted
+    steps:
+    - uses: actions/checkout@v3
+    - name: Install Dependencies
+      run: cd frontend && npm i
+    - name: Build
+      run: cd frontend && npm run build
