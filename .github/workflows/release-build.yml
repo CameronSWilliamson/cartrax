@@ -20,22 +20,12 @@ jobs:
       run: cd server && /root/.cargo/bin/cargo build --verbose --release
     - name: Run Tests
       run: cd server && /root/.cargo/bin/cargo test --verbose
-        #    - name: Save Artifact
-        #      uses: actions/upload-artifact@v3
-        #      with:
-        #        name: cartrax-api-release
-        #        path: server/target/release/cartraxapi
     - name: Build Docs
       run: cd server && /root/.cargo/bin/cargo doc
     - name: Compress Docs
       run: tar -C server/target/ -czvf docs.tar.gz doc 
-        #    - name: Save Artifact
-        #      uses: actions/upload-artifact@v3
-        #      with:
-        #        name: docs.tar.gz
-        #        path: docs.tar.gz
     - name: Build Docker
-      run: docker build -t api server/
+      run: docker build -t cartrax-server server/
   build-client:
     runs-on: self-hosted
     steps:
@@ -48,10 +38,5 @@ jobs:
       run: cd client && npm run build
     - name: Compress Client
       run: tar -C client -czvf client.tar.gz dist
-        #    - name: Save Artifact
-        #      uses: actions/upload-artifact@v3
-        #      with:
-        #        name: client.tar.gz
-        #        path: client.tar.gz
     - name: Build Docker
-      run: docker build -t client client/
+      run: docker build -t cartrax-client client/
