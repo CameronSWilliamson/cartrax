@@ -40,3 +40,30 @@
 .read-the-docs {
   color: #888;
 }
+
+table {
+  padding: 10px;
+  margin-bottom: 15px;
+  border: 1px solid;
+  border-collapse: collapse;
+  width: 100%;
+}
+
+th {
+  border: 1px solid;
+  background-color: rgba(0, 255, 255, 0.2);
+}
+
+tr:nth-child(even) {
+  background-color: rgba(0, 255, 255, 0.090);
+}
+
+tr:nth-child(odd) {
+  background-color: rgba(0, 255, 255, 0.050);
+}
+
+td {
+  border-top: 1px solid;
+  border-bottom: 1px solid;
+  border-left: 1px dotted;
+}
