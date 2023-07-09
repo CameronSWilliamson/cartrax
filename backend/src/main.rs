@@ -9,7 +9,7 @@ async fn main() -> std::io::Result<()> {
     if let None = &cli.command {
         cli.command = Some(Commands::Api {})
     }
-
+   
     match &cli.command.unwrap() {
         Commands::Api {} => run_api().await?,
         Commands::Migrate { filename } => run_migration(filename).await?,
