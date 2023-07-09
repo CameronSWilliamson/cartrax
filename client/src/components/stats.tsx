@@ -20,7 +20,7 @@ function Stats() {
                         setStats(GasInfoConversions.statsStringsToNums(data))
                     )
         );
-    });
+    }, []);
 
     return (
         <table>
