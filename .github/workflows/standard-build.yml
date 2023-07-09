@@ -2,21 +2,36 @@ name: Standard Build
 
 on:
   push:
-    branches: ["main", "dev"]
+    branches: 
+      - '**'
+      - '!main'
   pull_request:
-    branches: ["main", "dev"]
+    branches:
+      - '**'
+      - '!main'
 
 env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  build:
+  build-server:
     runs-on: self-hosted
     steps:
     - uses: actions/checkout@v3
     - name: Install Cargo
       run: curl https://sh.rustup.rs -sSf | sh -s -- -y
     - name: Build
-      run: /root/.cargo/bin/cargo build --verbose
+      run: cd server && /root/.cargo/bin/cargo build --verbose
     - name: Run Tests
-      run: /root/.cargo/bin/cargo test --verbose
+      run: cd server && /root/.cargo/bin/cargo test --verbose
+
+  build-client:
+    runs-on: self-hosted
+    steps:
+    - uses: actions/checkout@v3
+    - name: Install Node
+      run: curl -fsSL https://deb.nodesource.com/setup_16.x | bash - && apt-get install -y nodejs
+    - name: Install Dependencies
+      run: cd client && npm i
+    - name: Build
+      run: cd client && npm run build

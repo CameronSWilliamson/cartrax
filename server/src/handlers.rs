@@ -1,11 +1,19 @@
-use std::error::Error;
+use crate::{database::Database, models::*};
 use actix_web::{
     get, post,
     web::{self, Data},
     Responder,
 };
 use chrono::Utc;
-use crate::{database::Database, models::*};
+use std::error::Error;
+
+#[get("/")]
+async fn index() -> impl Responder {
+    web::Json(ResponseMessage {
+        status: ResponseStatus::Success,
+        data: ResponseType::from("Cartrax Home Page".to_string()),
+    })
+}
 
 /// Handles adding GasInfo data.
 #[post("/")]

@@ -1,0 +1,5 @@
+README.md
+dist
+node_modules
+.git
+.env

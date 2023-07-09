@@ -7,7 +7,7 @@ function postgres {
         docker run \
             --name cartrax-postgres \
             --hostname cartrax-postgres \
-            -e POSTGRES_PASSWORD=password
+            -e POSTGRES_PASSWORD=password \
             -dp 5432:5432 \
             postgres:latest
     fi
