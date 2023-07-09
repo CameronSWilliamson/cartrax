@@ -51,7 +51,7 @@ pub async fn run_api() -> std::io::Result<()> {
                 .service(handlers::index)
                 .wrap(cors)
         })
-        .bind(("localhost", 8080))?
+        .bind(("0.0.0.0", 8080))?
         .run()
         .await?
     } else {

@@ -3,9 +3,10 @@ import { GasInfo, ConvertGasInfo, StringGasInfo } from "../utils/gasInfo";
 
 function Entries() {
     const [entries, setEntries] = useState<Array<GasInfo>>([]);
+    console.log(import.meta.env.VITE_API_URL)
 
     useEffect(() => {
-        fetch("http://localhost:8080/cartrax/")
+        fetch(`${import.meta.env.VITE_API_URL}/cartrax/`)
             .then((response) =>
                 response.text().then((text) => {
                     let entries: Array<StringGasInfo> = JSON.parse(text);

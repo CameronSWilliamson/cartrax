@@ -1,6 +1,10 @@
 use crate::models::GasInfo;
 use sqlx::{postgres::PgPoolOptions, Pool, Postgres};
-use std::sync::{Arc, Mutex};
+use std::{
+    env,
+    process::exit,
+    sync::{Arc, Mutex},
+};
 
 /// The Arctix Database
 #[derive(Clone)]
@@ -35,9 +39,27 @@ impl DataPool {
     ///
     /// * `force` - Whether or not all operations on the DataPool should be forced
     pub async fn new(force: bool) -> Result<DataPool, sqlx::Error> {
+        let server_name = env::var("DB_NAME");
+        let username = env::var("DB_USERNAME");
+        let password = env::var("DB_PASSWORD");
+        let database = env::var("DB_DATABASE");
+
+        if server_name.is_err() || username.is_err() || password.is_err() || database.is_err() {
+            println!("Something went wrong parsing database environment variables");
+            exit(1);
+        }
+
+        let conn_string = format!(
+            "postgres://{}:{}@{}/{}",
+            username.unwrap(),
+            password.unwrap(),
+            server_name.unwrap(),
+            database.unwrap()
+        );
+
         let pool = PgPoolOptions::new()
             .max_connections(5)
-            .connect("postgres://postgres:password@localhost/test")
+            .connect(&conn_string)
             .await?;
         Ok(DataPool { pg: pool, force })
     }
@@ -51,7 +73,7 @@ impl DataPool {
         let exists: (bool,) = sqlx::query_as(
             "
             SELECT EXISTS (
-                SELECT 
+                SELECT
                 FROM information_schema.tables
                 WHERE table_schema = 'test'
                 AND   table_name = $1
@@ -96,7 +118,7 @@ impl DataPool {
     /// * `gas_info` - The entry to be added.
     pub async fn insert_gas_info(&self, gas_info: &GasInfo) -> Result<i32, sqlx::Error> {
         let id: (i32,) = sqlx::query_as(
-            "INSERT INTO cartrax 
+            "INSERT INTO cartrax
         (price_per_gallon, total_cost, gallons, a_tripometer,
          b_tripometer, total_tripometer, time_recorded, city, state)
         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
