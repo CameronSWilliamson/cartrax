@@ -12,22 +12,22 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  Build-Backend:
+  build-server:
     runs-on: self-hosted
     steps:
     - uses: actions/checkout@v3
     - name: Install Cargo
       run: curl https://sh.rustup.rs -sSf | sh -s -- -y
     - name: Build
-      run: cd backend && /root/.cargo/bin/cargo build --verbose
+      run: cd server && /root/.cargo/bin/cargo build --verbose
     - name: Run Tests
-      run: cd backend && /root/.cargo/bin/cargo test --verbose
+      run: cd servr && /root/.cargo/bin/cargo test --verbose
 
-  Builds-Frontend:
+  build-client:
     runs-on: self-hosted
     steps:
     - uses: actions/checkout@v3
     - name: Install Dependencies
-      run: cd frontend && npm i
+      run: cd client && npm i
     - name: Build
-      run: cd frontend && npm run build
+      run: cd client && npm run build
