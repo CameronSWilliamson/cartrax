@@ -1,8 +1,9 @@
 FROM node:18-alpine as build
 WORKDIR /app
 COPY . /app
+ARG API_URL="http://localhost:8080"
 RUN npm install
-RUN npm run build
+RUN VITE_API_URL=${API_URL} npm run build
 
 FROM nginx:1-alpine
 COPY --from=build /app/dist /usr/share/nginx/html
