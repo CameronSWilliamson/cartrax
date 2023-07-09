@@ -35,7 +35,7 @@ jobs:
         #        name: docs.tar.gz
         #        path: docs.tar.gz
     - name: Build Docker
-      run: docker build -t api .
+      run: docker build -t api server/
   build-client:
     runs-on: self-hosted
     steps:
@@ -54,4 +54,4 @@ jobs:
         #        name: client.tar.gz
         #        path: client.tar.gz
     - name: Build Docker
-      run: docker build -t client .
+      run: docker build -t client client/
