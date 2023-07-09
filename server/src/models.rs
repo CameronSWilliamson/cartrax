@@ -27,6 +27,17 @@ pub struct GasInfo {
     pub state: String,
 }
 
+#[derive(Serialize, Deserialize, Debug, Clone, sqlx::FromRow)]
+#[serde(rename_all = "camelCase")]
+pub struct GasInfoStats {
+    pub total_cost: BigDecimal,
+    pub total_gallons: BigDecimal,
+    pub avg_ppg: BigDecimal,
+    pub avg_mpg: BigDecimal,
+    pub avg_a_trip: BigDecimal,
+    pub avg_fill_size: BigDecimal,
+}
+
 /// The structure for every HTTP response
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]

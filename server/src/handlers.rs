@@ -1,4 +1,3 @@
-use crate::{database::Database, models::*};
 use actix_web::{
     get, post,
     web::{self, Data},
@@ -6,6 +5,11 @@ use actix_web::{
 };
 use chrono::Utc;
 use std::error::Error;
+
+use crate::{
+    database::Database,
+    models::{GasInfo, ResponseMessage, ResponseStatus, ResponseType},
+};
 
 #[get("/")]
 async fn index() -> impl Responder {
@@ -47,6 +51,14 @@ async fn get_trax_data(data: web::Data<Database>) -> Result<impl Responder, Box<
     Ok(web::Json(detail_list))
 }
 
+#[get("/stats/")]
+async fn get_trax_stats(data: web::Data<Database>) -> Result<impl Responder, Box<dyn Error>> {
+    let database = data.into_inner();
+    let client = database.client.lock().unwrap();
+    let stats = client.get_stats().await?;
+    Ok(web::Json(stats))
+}
+
 /// Configures the `/cartrax` endpoints.
 ///
 /// # Arguments
@@ -57,7 +69,8 @@ pub fn config(database: Database) -> impl FnOnce(&mut web::ServiceConfig) {
         let scope = web::scope("/cartrax")
             .app_data(Data::new(database))
             .service(post_trax_data)
-            .service(get_trax_data);
+            .service(get_trax_data)
+            .service(get_trax_stats);
         cfg.service(scope);
     }
 }

@@ -1,4 +1,5 @@
-use crate::models::GasInfo;
+use crate::models::{GasInfo, GasInfoStats};
+use bigdecimal::BigDecimal;
 use sqlx::{postgres::PgPoolOptions, Pool, Postgres};
 use std::{
     env,
@@ -136,5 +137,36 @@ impl DataPool {
         .fetch_one(&self.pg)
         .await?;
         Ok(id.0)
+    }
+
+    pub async fn get_stats(&self) -> Result<GasInfoStats, sqlx::Error> {
+        let (total_cost, total_gallons, avg_ppg, avg_mpg, avg_a_trip, avg_fill_size): (
+            BigDecimal,
+            BigDecimal,
+            BigDecimal,
+            BigDecimal,
+            BigDecimal,
+            BigDecimal,
+        ) = sqlx::query_as(
+            "SELECT SUM(total_cost), 
+                        SUM(gallons), 
+                        AVG(price_per_gallon), 
+                        MAX(total_tripometer) / SUM(gallons),
+                        AVG(a_tripometer),
+                        AVG(gallons)
+                 FROM cartrax
+                ",
+        )
+        .fetch_one(&self.pg)
+        .await?;
+
+        Ok(GasInfoStats {
+            total_cost,
+            total_gallons,
+            avg_ppg,
+            avg_mpg,
+            avg_a_trip,
+            avg_fill_size,
+        })
     }
 }
