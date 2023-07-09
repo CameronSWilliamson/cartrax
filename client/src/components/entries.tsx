@@ -1,18 +1,15 @@
 import { useEffect, useState } from "react";
-import { GasInfo, ConvertGasInfo, StringGasInfo } from "../utils/gasInfo";
+import { GasInfo, GasInfoConversions, StringGasInfo } from "../utils/gasInfo";
 
 function Entries() {
     const [entries, setEntries] = useState<Array<GasInfo>>([]);
-    console.log(import.meta.env.VITE_API_URL)
-
     useEffect(() => {
         fetch(`${import.meta.env.VITE_API_URL}/cartrax/`)
             .then((response) =>
-                response.text().then((text) => {
-                    let entries: Array<StringGasInfo> = JSON.parse(text);
+                response.json().then((data: Array<StringGasInfo>) => {
                     setEntries(
-                        entries.map((entry) =>
-                            ConvertGasInfo.stringsToNums(entry)
+                        data.map((entry) =>
+                            GasInfoConversions.gasInfoStringsToNums(entry)
                         )
                     );
                 })
@@ -47,13 +44,13 @@ function Entries() {
 }
 
 function Entry(props: { gasEntry: GasInfo; now: Date }) {
-    let t = props.gasEntry.timeRecorded;
+    const t = props.gasEntry.timeRecorded;
 
     //let jan = new Date(t.getFullYear(), 0, 1);
     //let jul = new Date(t.getFullYear(), 6, 1);
     function isDST(d: Date) {
-        let jan = new Date(d.getFullYear(), 0, 1).getTimezoneOffset();
-        let jul = new Date(d.getFullYear(), 6, 1).getTimezoneOffset();
+        const jan = new Date(d.getFullYear(), 0, 1).getTimezoneOffset();
+        const jul = new Date(d.getFullYear(), 6, 1).getTimezoneOffset();
         return Math.max(jan, jul) !== d.getTimezoneOffset();
     }
 
@@ -61,16 +58,14 @@ function Entry(props: { gasEntry: GasInfo; now: Date }) {
     const nowIsDst = isDST(props.now);
     const tIsDst = isDST(t);
 
-    console.log(`now: ${nowIsDst}, then: ${tIsDst}`);
-
     let hours = t.getHours();
     if (nowIsDst && !tIsDst) {
-        hours++
+        hours++;
     } else if (tIsDst && !nowIsDst) {
-        hours--
+        hours--;
     }
 
-    timeStr = `${timeStr} ${hours}:${t.getMinutes()}`
+    timeStr = `${timeStr} ${hours}:${t.getMinutes()}`;
 
     return (
         <tr>

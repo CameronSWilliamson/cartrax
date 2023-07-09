@@ -24,8 +24,26 @@ export interface StringGasInfo {
     state: string;
 }
 
-export class ConvertGasInfo {
-    public static stringsToNums(unParsed: StringGasInfo): GasInfo {
+export interface GasStats {
+    totalCost: number;
+    totalGallons: number;
+    avgPpg: number;
+    avgMpg: number;
+    avgATrip: number;
+    avgFillSize: number;
+}
+
+export interface StringGasStats {
+    totalCost: string;
+    totalGallons: string;
+    avgPpg: string;
+    avgMpg: string;
+    avgATrip: string;
+    avgFillSize: string;
+}
+
+export class GasInfoConversions {
+    public static gasInfoStringsToNums(unParsed: StringGasInfo): GasInfo {
         return {
             id: unParsed.id,
             pricePerGallon: parseFloat(unParsed.pricePerGallon),
@@ -37,6 +55,17 @@ export class ConvertGasInfo {
             timeRecorded: new Date(unParsed.timeRecorded),
             city: unParsed.city,
             state: unParsed.state,
+        };
+    }
+
+    public static statsStringsToNums(unParsed: StringGasStats): GasStats {
+        return {
+            totalCost: parseFloat(unParsed.totalCost),
+            totalGallons: parseFloat(unParsed.totalGallons),
+            avgPpg: parseFloat(unParsed.avgPpg),
+            avgMpg: parseFloat(unParsed.avgMpg),
+            avgATrip: parseFloat(unParsed.avgATrip),
+            avgFillSize: parseFloat(unParsed.avgFillSize),
         };
     }
 }
