@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import GasInfo from "../utils/gasInfo";
 
 function Entries() {
