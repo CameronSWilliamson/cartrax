@@ -56,6 +56,7 @@ pub async fn run_api() -> std::io::Result<()> {
         .await?
     } else {
         println!("Failed to connect to database");
+        exit(1);
     }
     Ok(())
 }
