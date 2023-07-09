@@ -14,11 +14,13 @@ env:
 jobs:
   Build-Backend:
     runs-on: self-hosted
+    container: 
+      image: rust:latest
     steps:
+    - name: Install npm
+      run: curl -fsSL https://deb.nodesource.com/setup_lts.x | bash - && apt-get install -y nodejs
     - uses: actions/checkout@v3
-    - name: Install Cargo
-      run: curl https://sh.rustup.rs -sSf | sh -s -- -y
     - name: Build
-      run: cd backend && /root/.cargo/bin/cargo build --verbose
+      run: cd backend && cargo build --verbose
     - name: Run Tests
-      run: cd backend && /root/.cargo/bin/cargo test --verbose
+      run: cd backend && cargo test --verbose
