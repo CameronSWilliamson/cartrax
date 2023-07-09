@@ -10,31 +10,45 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  build:
+  build-server:
     runs-on: self-hosted
     steps:
     - uses: actions/checkout@v3
     - name: Install Cargo
       run: curl https://sh.rustup.rs -sSf | sh -s -- -y
     - name: Build
-      run: /root/.cargo/bin/cargo build --verbose --release
+      run: cd server && /root/.cargo/bin/cargo build --verbose --release
     - name: Run Tests
-      run: /root/.cargo/bin/cargo test --verbose
-    
+      run: cd server && /root/.cargo/bin/cargo test --verbose
     - name: Save Artifact
       uses: actions/upload-artifact@v3
       with:
         name: cartrax-api-release
-        path: target/release/cartraxapi
-
+        path: server/target/release/cartraxapi
     - name: Build Docs
-      run: /root/.cargo/bin/cargo doc
-
+      run: cd server && /root/.cargo/bin/cargo doc
     - name: Compress Docs
-      run: tar -C target/ -czvf docs.tar.gz doc 
-
+      run: tar -C server/target/ -czvf docs.tar.gz doc 
     - name: Save Artifact
       uses: actions/upload-artifact@v3
       with:
         name: docs.tar.gz
         path: docs.tar.gz
+  build-client:
+    runs-on: self-hosted
+    steps:
+    - uses: actions/checkout@v3
+    - name: Install Node
+      run: curl -fsSL https://deb.nodesource.com/setup_16.x | bash - && apt-get install -y nodejs
+    - name: Install Dependencies
+      run: cd client && npm i
+    - name: Build
+      run: cd client && npm run build
+    - name: Compress Client
+      run: tar -C client -czvf client.tar.gz dist
+    - name: Save Artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: client.tar.gz
+        path: client.tar.gz
+    
