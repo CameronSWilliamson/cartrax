@@ -6,3 +6,6 @@ services:
 
   client:
     build: client/ 
+
+  migrate:
+    build: server/
