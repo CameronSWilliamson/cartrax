@@ -5,6 +5,7 @@ on:
     branches: 
       - '**'
       - '!main'
+      - '!feature/deploy'
   pull_request:
     branches:
       - '**'

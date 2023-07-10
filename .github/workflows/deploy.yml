@@ -1,7 +1,8 @@
 name: Deploy
 on:
   push:
-    - "feature/deploy"
+    branches:
+      - "feature/deploy"
     #tags:
     # - 'v[0-9]+.[0-9]+.[0-9]+'
 
@@ -21,6 +22,8 @@ jobs:
       - name: Build Server Docker and Export
         run: docker build -t cartrax-server server/ && docker save -o ./server.tar cartrax-server
 
+      - name: ls
+        run: ls
       - name: Send Client
         uses: appleboy/scp-action@v0.1.4
         with:
@@ -42,7 +45,7 @@ jobs:
           target: "/tmp/"
 
       - name: Install Server And Client
-        uses: appleboy/ssh-action@0.1.10
+        uses: appleboy/ssh-action@v0.1.10
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
