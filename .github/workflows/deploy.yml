@@ -1,0 +1,76 @@
+name: Deploy
+on:
+  push:
+    tags:
+     - 'v[0-9]+.[0-9]+.[0-9]+'
+
+jobs:
+  deploy:
+    runs-on: "self-hosted"
+    steps:
+      - uses: actions/checkout@v3
+      - name: Build Client Docker and Export
+        run: |
+          docker build -t cartrax-client --build-arg="API_URL=${{ secrets.API_URL }}" client/ 
+          docker save -o ./client.tar cartrax-client
+      - name: Build Server Docker and Export
+        run: |
+          docker build -t cartrax-server server/
+          docker save -o ./server.tar cartrax-server
+
+      - name: ls
+        run: ls
+      - name: Send Client
+        uses: appleboy/scp-action@v0.1.4
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.KEY }}
+          port: ${{ secrets.PORT }}
+          source: "client.tar"
+          target: "/tmp/"
+      
+      - name: Send Server
+        uses: appleboy/scp-action@v0.1.4
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.KEY }}
+          port: ${{ secrets.PORT }}
+          source: "server.tar"
+          target: "/tmp/"
+
+      - name: Create Cartrax Directory
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          port: ${{ secrets.PORT }}
+          key: ${{ secrets.KEY }}
+          script: |
+            rm -rf ~/cartrax
+            mkdir ~/cartrax
+
+      - name: Send Docker Compose
+        uses: appleboy/scp-action@v0.1.4
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.KEY }}
+          port: ${{ secrets.PORT }}
+          source: "docker-compose.yml"
+          target: "~/cartrax"
+
+      - name: Install Server And Client
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          port: ${{ secrets.PORT }}
+          key: ${{ secrets.KEY }}
+          script: |
+            docker load -i /tmp/server.tar 
+            docker load -i /tmp/client.tar
+            cd ~/cartrax
+            docker-compose down
+            docker-compose up -d
