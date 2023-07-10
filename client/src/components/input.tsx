@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { GasInfo } from "../utils/gasInfo";
 
 function GasInfoInput() {
     const [ppg, setPpg] = useState(0);
@@ -11,6 +10,8 @@ function GasInfoInput() {
     const [city, setCity] = useState("");
     const [state, setState] = useState("");
     const [manualLocation, setManualLocation] = useState(true);
+
+    console.log(city, state, setState)
 
     useEffect(() => {
         console.log("hello");

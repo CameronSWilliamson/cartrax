@@ -27,6 +27,7 @@ jobs:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.KEY }}
+          port: ${{ secrets.PORT }}
           source: "client.tar"
           target: "/tmp/"
       
@@ -36,6 +37,7 @@ jobs:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.KEY }}
+          port: ${{ secrets.PORT }}
           source: "server.tar"
           target: "/tmp/"
 
@@ -44,5 +46,6 @@ jobs:
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
+          port: ${{ secrets.PORT }}
           key: ${{ secrets.KEY }}
           script: docker load -i /tmp/server.tar && docker load -i /tmp/client.tar
