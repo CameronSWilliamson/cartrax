@@ -4,7 +4,7 @@ services:
   server:
     image: cartrax-server
     ports:
-      - "8080:8080"
+      - "5000:5000"
     restart: on-failure
     depends_on:
       - postgres
@@ -14,7 +14,7 @@ services:
       DB_PASSWORD: password
       DB_DATABASE: postgres
 
-  db:
+  postgres:
     image: "postgres"
     ports:
       - "5432:5432"
@@ -24,20 +24,6 @@ services:
   client:
     image: cartrax-client
     ports:
-      - "80:80"
+      - "8080:80"
     depends_on:
       - server
-
-  migrate:
-    image: cartrax-server
-    command: ./cartrax migrate
-    ports:
-      - "8080:8080"
-    restart: on-failure
-    depends_on:
-      - db
-    environment:
-      DB_NAME: postgres
-      DB_USERNAME: postgres
-      DB_PASSWORD: password
-      DB_DATABASE: postgres
