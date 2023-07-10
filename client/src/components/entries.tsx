@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { GasInfo, GasInfoConversions, StringGasInfo } from "../utils/gasInfo";
+import './reactiveTable.css'
 
 function Entries() {
     const [entries, setEntries] = useState<Array<GasInfo>>([]);
@@ -22,6 +23,7 @@ function Entries() {
     return (
         <div>
             <table>
+                <caption>Gas Data</caption>
                 <tbody>
                     <tr>
                         <th>Price Per Gallon</th>
@@ -69,15 +71,15 @@ function Entry(props: { gasEntry: GasInfo; now: Date }) {
 
     return (
         <tr>
-            <td>${props.gasEntry.pricePerGallon.toFixed(3)}</td>
-            <td>${props.gasEntry.totalCost.toFixed(2)}</td>
-            <td>{props.gasEntry.gallons.toFixed(3)}</td>
-            <td>{props.gasEntry.aTripometer.toFixed(1)}</td>
-            <td>{props.gasEntry.bTripometer.toFixed(1)}</td>
-            <td>{props.gasEntry.totalTripometer}</td>
-            <td>{timeStr}</td>
-            <td>{props.gasEntry.city}</td>
-            <td>{props.gasEntry.state}</td>
+            <td data-cell="price per gallon">${props.gasEntry.pricePerGallon.toFixed(3)}</td>
+            <td data-cell="total cost">${props.gasEntry.totalCost.toFixed(2)}</td>
+            <td data-cell="gallons">{props.gasEntry.gallons.toFixed(3)}</td>
+            <td data-cell="a tripometer">{props.gasEntry.aTripometer.toFixed(1)}</td>
+            <td data-cell="b tripometer">{props.gasEntry.bTripometer.toFixed(1)}</td>
+            <td data-cell="total tripometer">{props.gasEntry.totalTripometer}</td>
+            <td data-cell="time recorded">{timeStr}</td>
+            <td data-cell="city">{props.gasEntry.city}</td>
+            <td data-cell="state">{props.gasEntry.state}</td>
         </tr>
     );
 }

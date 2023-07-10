@@ -6,11 +6,11 @@ import Stats from "./components/stats";
 
 function App() {
     return (
-        <>
+        <div className="wrapper">
             <GasInfoInput />
             <Stats />
             <Entries />
-        </>
+        </div>
     );
 }
 

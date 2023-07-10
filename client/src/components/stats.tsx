@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { GasInfoConversions, GasStats } from "../utils/gasInfo";
+import "./reactiveTable.css";
 
 function Stats() {
     const [stats, setStats] = useState<GasStats>({
@@ -24,6 +25,7 @@ function Stats() {
 
     return (
         <table>
+            <caption>Statistics</caption>
             <tbody>
                 <tr>
                     <th>Total $ Spent</th>
@@ -34,12 +36,20 @@ function Stats() {
                     <th>Average Fill Size</th>
                 </tr>
                 <tr>
-                    <td>${stats.totalCost.toFixed(2)}</td>
-                    <td>{stats.totalGallons.toFixed(3)}</td>
-                    <td>${stats.avgPpg.toFixed(3)}</td>
-                    <td>{stats.avgMpg.toFixed(1)}</td>
-                    <td>{stats.avgATrip.toFixed(1)}</td>
-                    <td>{stats.avgFillSize.toFixed(3)}</td>
+                    <td data-cell="total $ spent">
+                        ${stats.totalCost.toFixed(2)}
+                    </td>
+                    <td data-cell="total gallons">
+                        {stats.totalGallons.toFixed(3)}
+                    </td>
+                    <td data-cell="average ppg">${stats.avgPpg.toFixed(3)}</td>
+                    <td data-cell="average mpg">{stats.avgMpg.toFixed(1)}</td>
+                    <td data-cell="average a trip">
+                        {stats.avgATrip.toFixed(1)}
+                    </td>
+                    <td data-cell="average fill size">
+                        {stats.avgFillSize.toFixed(3)}
+                    </td>
                 </tr>
             </tbody>
         </table>
