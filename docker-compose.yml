@@ -3,6 +3,7 @@ version: '3'
 services:
   server:
     build: server/
+    image: cartrax-server
     ports:
       - "8080:8080"
     restart: on-failure
@@ -22,8 +23,8 @@ services:
       POSTGRES_PASSWORD: password
 
   client:
-    build: 
-      context: client/
+    image: cartrax-client
+    build: client/ 
     ports:
       - "80:80"
     depends_on:
