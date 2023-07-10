@@ -11,8 +11,6 @@ function GasInfoInput() {
     const [state, setState] = useState("");
     const [manualLocation, setManualLocation] = useState(true);
 
-    console.log(city, state, setState)
-
     useEffect(() => {
         console.log("hello");
 
@@ -40,12 +38,12 @@ function GasInfoInput() {
             bTripometer: bTrip,
             totalTripometer: totTrip,
             timeRecorded: new Date().toISOString(),
-            city: "here",
-            state: "here",
+            city: city,
+            state: state,
         };
         let gasInfoString = JSON.stringify(gasInfo);
         console.log(gasInfoString);
-        fetch("http://localhost:8080/cartrax/", {
+        fetch(`${import.meta.env.VITE_API_URL}/cartrax/`, {
             body: gasInfoString,
             method: "post",
             headers: {
@@ -80,6 +78,8 @@ function GasInfoInput() {
                         <Input label="Total Tripometer" set={setTotTrip} />
                     </li>
                     {manualLocation ? (
+                        ""
+                    ) : (
                         <>
                             <li className="form-row">
                                 <label>City</label>
@@ -90,15 +90,13 @@ function GasInfoInput() {
                             <li className="form-row">
                                 <label>State</label>
                                 <input
-                                    onChange={(e) => setCity(e.target.value)}
+                                    onChange={(e) => setState(e.target.value)}
                                 />
                             </li>
                         </>
-                    ) : (
-                        ""
                     )}
                 </ul>
-                <button type="button" onClick={handleSubmit}>
+                <button type="submit">
                     Submit
                 </button>
             </form>
