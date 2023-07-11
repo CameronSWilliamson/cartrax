@@ -1,15 +1,11 @@
 import "./App.css";
-import Entries from "./components/entries";
-import GasInfoInput from "./components/input";
-import Stats from "./components/stats";
+import GasInfoForm from "./components/gasInfoForm";
 
 
 function App() {
     return (
         <div className="wrapper">
-            <GasInfoInput />
-            <Stats />
-            <Entries />
+            <GasInfoForm />
         </div>
     );
 }

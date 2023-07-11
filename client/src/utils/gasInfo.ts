@@ -18,7 +18,7 @@ export interface StringGasInfo {
     gallons: string;
     aTripometer: string;
     bTripometer: string;
-    totalTripometer: string;
+    totalTripometer: number;
     timeRecorded: string;
     city: string;
     state: string;
@@ -51,7 +51,7 @@ export class GasInfoConversions {
             gallons: parseFloat(unParsed.gallons),
             aTripometer: parseFloat(unParsed.aTripometer),
             bTripometer: parseFloat(unParsed.bTripometer),
-            totalTripometer: parseFloat(unParsed.totalTripometer),
+            totalTripometer: parseInt(unParsed.totalTripometer),
             timeRecorded: new Date(unParsed.timeRecorded),
             city: unParsed.city,
             state: unParsed.state,
@@ -67,5 +67,22 @@ export class GasInfoConversions {
             avgATrip: parseFloat(unParsed.avgATrip),
             avgFillSize: parseFloat(unParsed.avgFillSize),
         };
+    }
+
+    public static gasInfoToJson(unParsed: GasInfo): string {
+        let parsed: StringGasInfo = {
+            id: unParsed.id,
+            pricePerGallon: unParsed.pricePerGallon.toString(),
+            totalCost: unParsed.totalCost.toString(),
+            gallons: unParsed.gallons.toString(),
+            aTripometer: unParsed.aTripometer.toString(),
+            bTripometer: unParsed.bTripometer.toString(),
+            totalTripometer: unParsed.totalTripometer,
+            timeRecorded: unParsed.timeRecorded.toISOString(),
+            city: unParsed.city,
+            state: unParsed.state
+        }
+
+        return JSON.stringify(parsed)
     }
 }

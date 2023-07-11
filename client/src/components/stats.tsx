@@ -1,28 +1,8 @@
-import { useEffect, useState } from "react";
-import { GasInfoConversions, GasStats } from "../utils/gasInfo";
+import { GasStats } from "../utils/gasInfo";
 import "./reactiveTable.css";
 
-function Stats() {
-    const [stats, setStats] = useState<GasStats>({
-        totalCost: -1,
-        totalGallons: -1,
-        avgPpg: -1,
-        avgMpg: -1,
-        avgATrip: -1,
-        avgFillSize: -1,
-    });
-
-    useEffect(() => {
-        fetch(`${import.meta.env.VITE_API_URL}/cartrax/stats/`).then(
-            (response) =>
-                response
-                    .json()
-                    .then((data) =>
-                        setStats(GasInfoConversions.statsStringsToNums(data))
-                    )
-        );
-    }, []);
-
+function Stats(props: { stats: GasStats }) {
+    const { stats } = props;
     return (
         <table>
             <caption>Statistics</caption>

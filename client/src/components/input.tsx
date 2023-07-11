@@ -1,6 +1,12 @@
 import React, { useEffect, useState } from "react";
+import { GasInfo, GasInfoConversions } from "../utils/gasInfo";
 
-function GasInfoInput() {
+interface Props {
+    entries: Array<GasInfo>;
+    setEntries: React.Dispatch<React.SetStateAction<Array<GasInfo>>>;
+}
+
+function GasInfoInput(props: Props) {
     const [ppg, setPpg] = useState(0);
     const [totalCost, setTotalCost] = useState(0);
     const [gallons, setGallons] = useState(0);
@@ -30,21 +36,22 @@ function GasInfoInput() {
     }
 
     const handleSubmit = (event: React.FormEvent<any>) => {
-        let gasInfo = {
+        let gasInfo: GasInfo = {
+            id: null,
             pricePerGallon: ppg,
             totalCost: totalCost,
             gallons: gallons,
             aTripometer: aTrip,
             bTripometer: bTrip,
             totalTripometer: totTrip,
-            timeRecorded: new Date().toISOString(),
+            timeRecorded: new Date(),
             city: city,
             state: state,
         };
-        let gasInfoString = JSON.stringify(gasInfo);
-        console.log(gasInfoString);
+        console.table(gasInfo);
+        console.table(GasInfoConversions.gasInfoToJson(gasInfo));
         fetch(`${import.meta.env.VITE_API_URL}/cartrax/`, {
-            body: gasInfoString,
+            body: GasInfoConversions.gasInfoToJson(gasInfo),
             method: "post",
             headers: {
                 "Content-Type": "application/json",
@@ -52,6 +59,7 @@ function GasInfoInput() {
         })
             .then((res) => console.table(res))
             .catch(console.log);
+        props.setEntries([...props.entries, gasInfo])
         event?.preventDefault();
     };
 
