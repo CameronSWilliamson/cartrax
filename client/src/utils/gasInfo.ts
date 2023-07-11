@@ -51,7 +51,7 @@ export class GasInfoConversions {
             gallons: parseFloat(unParsed.gallons),
             aTripometer: parseFloat(unParsed.aTripometer),
             bTripometer: parseFloat(unParsed.bTripometer),
-            totalTripometer: parseInt(unParsed.totalTripometer),
+            totalTripometer: unParsed.totalTripometer,
             timeRecorded: new Date(unParsed.timeRecorded),
             city: unParsed.city,
             state: unParsed.state,

@@ -2,8 +2,7 @@ import React, { useEffect, useState } from "react";
 import { GasInfo, GasInfoConversions } from "../utils/gasInfo";
 
 interface Props {
-    entries: Array<GasInfo>;
-    setEntries: React.Dispatch<React.SetStateAction<Array<GasInfo>>>;
+    update: (_: GasInfo) => void
 }
 
 function GasInfoInput(props: Props) {
@@ -48,8 +47,6 @@ function GasInfoInput(props: Props) {
             city: city,
             state: state,
         };
-        console.table(gasInfo);
-        console.table(GasInfoConversions.gasInfoToJson(gasInfo));
         fetch(`${import.meta.env.VITE_API_URL}/cartrax/`, {
             body: GasInfoConversions.gasInfoToJson(gasInfo),
             method: "post",
@@ -57,9 +54,11 @@ function GasInfoInput(props: Props) {
                 "Content-Type": "application/json",
             },
         })
-            .then((res) => console.table(res))
+            .then((res) => {
+                if (res.status != 200) res.text().then(console.log);
+            })
             .catch(console.log);
-        props.setEntries([...props.entries, gasInfo])
+        props.update(gasInfo)
         event?.preventDefault();
     };
 

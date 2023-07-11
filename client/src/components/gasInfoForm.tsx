@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import React, { SetStateAction, useEffect, useState } from "react";
 import { GasInfo, StringGasInfo } from "../utils/gasInfo";
 import { GasInfoConversions, GasStats } from "../utils/gasInfo";
 import Entries from "./entries";
@@ -36,9 +36,29 @@ export default function GasInfoForm() {
         );
     }, []);
 
-    return <>
-            <GasInfoInput entries={entries} setEntries={setEntries} />
+    return (
+        <>
+            <GasInfoInput update={updateData(setStats, setEntries, entries)}/>
             <Stats stats={stats} />
-            <Entries entries={entries}/>
-    </>
+            <Entries entries={entries} />
+        </>
+    );
+}
+
+function updateData(
+    setStats: React.Dispatch<SetStateAction<GasStats>>,
+    setEntries: React.Dispatch<SetStateAction<Array<GasInfo>>>,
+    entries: Array<GasInfo>
+) {
+    return (entry: GasInfo) => {
+        setEntries([...entries, entry]);
+
+        fetch(`${import.meta.env.VITE_API_URL}/cartrax/stats`).then((response) => {
+            if (response.status != 200) { 
+                response.text().then(console.log)
+            } else {
+                response.json().then(setStats)
+            }
+        })
+    };
 }
