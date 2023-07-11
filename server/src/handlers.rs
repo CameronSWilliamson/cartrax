@@ -7,7 +7,7 @@ use chrono::Utc;
 use std::error::Error;
 
 use crate::{
-    database::Database,
+    database::{Database, self},
     models::{GasInfo, ResponseMessage, ResponseStatus, ResponseType},
 };
 
@@ -30,9 +30,8 @@ async fn post_trax_data(
     if let None = gas_info.time_recorded {
         gas_info.time_recorded = Some(Utc::now());
     }
-    let database = data.into_inner();
-    let client = database.client.lock().unwrap();
-    let id = client.insert_gas_info(&gas_info).await?;
+    let db = data.into_inner();
+    let id = database::insert_gas_info(&db.client, &gas_info).await?;
 
     Ok(web::Json(ResponseMessage {
         status: ResponseStatus::Success,
@@ -43,19 +42,17 @@ async fn post_trax_data(
 /// Handles getting GasInfo data.
 #[get("/")]
 async fn get_trax_data(data: web::Data<Database>) -> Result<impl Responder, Box<dyn Error>> {
-    let database = data.into_inner();
-    let client = database.client.lock().unwrap();
+    let db = data.into_inner();
     let detail_list = sqlx::query_as::<_, GasInfo>("SELECT * FROM cartrax ORDER BY id")
-        .fetch_all(&client.pg)
+        .fetch_all(&db.client)
         .await?;
     Ok(web::Json(detail_list))
 }
 
 #[get("/stats/")]
 async fn get_trax_stats(data: web::Data<Database>) -> Result<impl Responder, Box<dyn Error>> {
-    let database = data.into_inner();
-    let client = database.client.lock().unwrap();
-    let stats = client.get_stats().await?;
+    let db = data.into_inner();
+    let stats = database::get_stats(&db.client).await?;
     Ok(web::Json(stats))
 }
 

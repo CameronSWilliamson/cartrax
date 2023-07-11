@@ -7,8 +7,8 @@ use std::{fs::File, io::BufReader, process::exit};
 use actix_cors::Cors;
 use actix_web::{App, HttpServer};
 use clap::{Parser, Subcommand};
-use database::DataPool;
 use models::GasInfo;
+use sqlx::{Pool, Postgres};
 
 /// The commandline arguments allowed for this program
 #[derive(Parser)]
@@ -67,7 +67,7 @@ pub async fn run_api() -> std::io::Result<()> {
 ///
 /// * `filename` - The name of the CSV file to store the data in
 pub async fn run_backup(filename: &String) -> std::io::Result<()> {
-    let pool = DataPool::new(true).await;
+    let pool = database::new().await;
     if let Err(error) = pool {
         println!("Failed to connect to database: {}", error.to_string());
         exit(1);
@@ -76,7 +76,7 @@ pub async fn run_backup(filename: &String) -> std::io::Result<()> {
     let mut file = File::create(filename)?;
     let mut csv_writer = csv::Writer::from_writer(&mut file);
     let detail_list = sqlx::query_as::<_, GasInfo>("SELECT * FROM cartrax ORDER BY id")
-        .fetch_all(&pool.pg)
+        .fetch_all(&pool)
         .await;
     if let Err(error) = detail_list {
         println!("Failed to fetch data: {}", error.to_string());
@@ -97,7 +97,7 @@ pub async fn run_backup(filename: &String) -> std::io::Result<()> {
 ///
 /// * `filename` - An optional string that holds the name of the file to read from
 pub async fn run_migration(filename: &Option<String>) -> std::io::Result<()> {
-    let pool = DataPool::new(true).await;
+    let pool = database::new().await;
     if let Err(error) = pool {
         println!("Failed to connect to database: {}", error.to_string());
         exit(1);
@@ -117,7 +117,7 @@ pub async fn run_migration(filename: &Option<String>) -> std::io::Result<()> {
         let mut counter = 2;
         for entry in csv_reader.deserialize() {
             let record: GasInfo = entry?;
-            match pool.insert_gas_info(&record).await {
+            match database::insert_gas_info(&pool, &record).await {
                 Err(_) => println!("Failed to add entry on line {counter}"),
                 Ok(_) => (),
             }
@@ -132,7 +132,7 @@ pub async fn run_migration(filename: &Option<String>) -> std::io::Result<()> {
 /// # Arguments
 ///
 /// * `pool` - The SQLX data pool
-async fn create_tables(pool: &DataPool) -> Result<(), sqlx::Error> {
+async fn create_tables(pool: &Pool<Postgres>) -> Result<(), sqlx::Error> {
     let fields = "
         id SERIAL PRIMARY KEY NOT NULL,
         price_per_gallon NUMERIC(5, 3) NOT NULL,
@@ -146,6 +146,6 @@ async fn create_tables(pool: &DataPool) -> Result<(), sqlx::Error> {
         state TEXT NOT NULL
         ";
 
-    pool.create_table("cartrax", fields).await?;
+    database::create_table(&pool, "cartrax", fields, true).await?;
     Ok(())
 }
