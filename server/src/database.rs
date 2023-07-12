@@ -28,19 +28,19 @@ type Result<T> = std::result::Result<T, sqlx::Error>;
 ///
 /// * `force` - Whether or not all operations on the DataPool should be forced
 pub async fn new() -> Result<Pool> {
-    let server_name = env::var("DB_NAME");
-    let username = env::var("DB_USERNAME");
+    let server_name = env::var("DB_HOSTNAME");
+    let username = "postgres";
     let password = env::var("DB_PASSWORD");
     let database = env::var("DB_DATABASE");
 
-    if server_name.is_err() || username.is_err() || password.is_err() || database.is_err() {
+    if server_name.is_err() || password.is_err() || database.is_err() {
         println!("Something went wrong parsing database environment variables");
         exit(1);
     }
 
     let conn_string = format!(
         "postgres://{}:{}@{}/{}",
-        username.unwrap(),
+        username,
         password.unwrap(),
         server_name.unwrap(),
         database.unwrap()
