@@ -38,7 +38,8 @@ export default function GasInfoForm() {
 
     return (
         <>
-            <GasInfoInput update={updateData(setStats, setEntries, entries)}/>
+            <h1>Gas Statistics</h1>
+            <GasInfoInput update={updateData(setStats, setEntries, entries)} />
             <Stats stats={stats} />
             <Entries entries={entries} />
         </>
@@ -53,12 +54,14 @@ function updateData(
     return (entry: GasInfo) => {
         setEntries([...entries, entry]);
 
-        fetch(`${import.meta.env.VITE_API_URL}/cartrax/stats`).then((response) => {
-            if (response.status != 200) { 
-                response.text().then(console.log)
-            } else {
-                response.json().then(setStats)
+        fetch(`${import.meta.env.VITE_API_URL}/cartrax/stats`).then(
+            (response) => {
+                if (response.status != 200) {
+                    response.text().then(console.log);
+                } else {
+                    response.json().then(setStats);
+                }
             }
-        })
+        );
     };
 }
