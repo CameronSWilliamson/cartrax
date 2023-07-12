@@ -8,7 +8,6 @@ use actix_cors::Cors;
 use actix_web::{App, HttpServer};
 use clap::{Parser, Subcommand};
 use models::GasInfo;
-use sqlx::{Pool, Postgres};
 
 /// The commandline arguments allowed for this program
 #[derive(Parser)]
@@ -44,6 +43,7 @@ pub async fn run_api() -> std::io::Result<()> {
     env_logger::init();
 
     if let Ok(database) = database::Database::new().await {
+        database::ensure_tables_exist(&database.client, true).await.unwrap();
         HttpServer::new(move || {
             let cors = Cors::permissive();
             App::new()
@@ -104,7 +104,7 @@ pub async fn run_migration(filename: &Option<String>) -> std::io::Result<()> {
     }
     let pool = pool.unwrap();
 
-    let tables_created = create_tables(&pool).await;
+    let tables_created = database::ensure_tables_exist(&pool, true).await;
     if let Err(error) = tables_created {
         println!("Failed to migrate database: {}", error.to_string());
         exit(1);
@@ -124,28 +124,7 @@ pub async fn run_migration(filename: &Option<String>) -> std::io::Result<()> {
             counter += 1;
         }
     }
+    println!("Successfully migrated data");
     Ok(())
 }
 
-/// Creates the required tables in the database.
-///
-/// # Arguments
-///
-/// * `pool` - The SQLX data pool
-async fn create_tables(pool: &Pool<Postgres>) -> Result<(), sqlx::Error> {
-    let fields = "
-        id SERIAL PRIMARY KEY NOT NULL,
-        price_per_gallon NUMERIC(5, 3) NOT NULL,
-        total_cost NUMERIC(6, 2) NOT NULL,
-        gallons NUMERIC(5, 3) NOT NULL,
-        a_tripometer NUMERIC(8, 1) NOT NULL,
-        b_tripometer NUMERIC(8, 1) NOT NULL,
-        total_tripometer INTEGER NOT NULL,
-        time_recorded TIMESTAMPTZ NOT NULL,
-        city TEXT NOT NULL,
-        state TEXT NOT NULL
-        ";
-
-    database::create_table(&pool, "cartrax", fields, true).await?;
-    Ok(())
-}
