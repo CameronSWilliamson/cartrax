@@ -1,6 +1,6 @@
 [package]
 name = "cartrax"
-version = "1.0.0"
+version = "0.3.0"
 edition = "2021"
 authors = ["Cameron S. Williamson"]
 description = "An API for tracking gas fill ups for a car"

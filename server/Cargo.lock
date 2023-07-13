@@ -458,7 +458,7 @@ dependencies = [
 
 [[package]]
 name = "cartrax"
-version = "1.0.0"
+version = "0.3.0"
 dependencies = [
  "actix-cors",
  "actix-web",
