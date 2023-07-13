@@ -109,8 +109,8 @@ pub async fn insert_gas_info(pool: &Pool, gas_info: &GasInfo) -> Result<i32> {
     .bind(&gas_info.gallons)
     .bind(&gas_info.a_tripometer)
     .bind(&gas_info.b_tripometer)
-    .bind(&gas_info.total_tripometer)
-    .bind(&gas_info.time_recorded)
+    .bind(gas_info.total_tripometer)
+    .bind(gas_info.time_recorded)
     .bind(&gas_info.city)
     .bind(&gas_info.state)
     .fetch_one(pool)
@@ -168,6 +168,6 @@ pub async fn ensure_tables_exist(pool: &Pool, force: bool) -> Result<()> {
         state TEXT NOT NULL
         ";
 
-    create_table(&pool, "cartrax", fields, force).await?;
+    create_table(pool, "cartrax", fields, force).await?;
     Ok(())
 }

@@ -1,8 +1,6 @@
 use bigdecimal::BigDecimal;
 use serde::{Deserialize, Serialize};
 
-use crate::VersionInfo;
-
 /// Details required for each time gas is filled
 #[derive(Serialize, Deserialize, Debug, Clone, sqlx::FromRow)]
 #[serde(rename_all = "camelCase")]
@@ -39,4 +37,3 @@ pub struct GasInfoStats {
     pub avg_a_trip: BigDecimal,
     pub avg_fill_size: BigDecimal,
 }
-

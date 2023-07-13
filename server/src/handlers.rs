@@ -4,14 +4,14 @@ use actix_web::{
     Responder,
 };
 use chrono::Utc;
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 use std::error::Error;
 
 use crate::{
     database::{self, Database},
-    models::GasInfo, VersionInfo,
+    models::GasInfo,
+    VersionInfo,
 };
-
 
 /// The structure for every HTTP response
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -29,9 +29,9 @@ pub enum ResponseType {
     /// A response that contains a string
     Message(String),
     /// A response that contains information on gasoline
-    GasInfo(GasInfo),
+    GasInfo(Box<GasInfo>),
     /// A response that contains version info
-    Version(VersionInfo),
+    Version(Box<VersionInfo>),
 }
 
 impl From<String> for ResponseType {
@@ -42,13 +42,13 @@ impl From<String> for ResponseType {
 
 impl From<GasInfo> for ResponseType {
     fn from(value: GasInfo) -> Self {
-        ResponseType::GasInfo(value)
+        ResponseType::GasInfo(Box::new(value))
     }
 }
 
 impl From<VersionInfo> for ResponseType {
     fn from(value: VersionInfo) -> Self {
-        ResponseType::Version(value)       
+        ResponseType::Version(Box::new(value))
     }
 }
 
@@ -80,9 +80,8 @@ async fn post_trax_data(
     data: web::Data<Database>,
     gas_info: web::Json<GasInfo>,
 ) -> Result<impl Responder, Box<dyn Error>> {
-    println!("Getting Data");
     let mut gas_info = gas_info.into_inner();
-    if let None = gas_info.time_recorded {
+    if gas_info.time_recorded.is_none() {
         gas_info.time_recorded = Some(Utc::now());
     }
     let db = data.into_inner();

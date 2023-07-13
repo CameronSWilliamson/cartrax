@@ -9,7 +9,7 @@ use actix_web::{web, App, HttpServer};
 use clap::{Parser, Subcommand};
 use dotenv::dotenv;
 use models::GasInfo;
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 /// The commandline arguments allowed for this program
 #[derive(Parser)]
@@ -58,6 +58,12 @@ impl VersionInfo {
     }
 }
 
+impl Default for VersionInfo {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 /// Configures and runs the API.
 pub async fn run_api() -> std::io::Result<()> {
     std::env::set_var("RUST_LOG", "debug");
@@ -95,7 +101,7 @@ pub async fn run_api() -> std::io::Result<()> {
 pub async fn run_backup(filename: &String) -> std::io::Result<()> {
     let pool = database::new().await;
     if let Err(error) = pool {
-        println!("Failed to connect to database: {}", error.to_string());
+        println!("Failed to connect to database: {}", error);
         exit(1);
     }
     let pool = pool.unwrap();
@@ -105,7 +111,7 @@ pub async fn run_backup(filename: &String) -> std::io::Result<()> {
         .fetch_all(&pool)
         .await;
     if let Err(error) = detail_list {
-        println!("Failed to fetch data: {}", error.to_string());
+        println!("Failed to fetch data: {}", error);
         exit(1);
     }
     for entry in detail_list.unwrap() {
@@ -125,14 +131,14 @@ pub async fn run_backup(filename: &String) -> std::io::Result<()> {
 pub async fn run_migration(filename: &Option<String>) -> std::io::Result<()> {
     let pool = database::new().await;
     if let Err(error) = pool {
-        println!("Failed to connect to database: {}", error.to_string());
+        println!("Failed to connect to database: {}", error);
         exit(1);
     }
     let pool = pool.unwrap();
 
     let tables_created = database::ensure_tables_exist(&pool, true).await;
     if let Err(error) = tables_created {
-        println!("Failed to migrate database: {}", error.to_string());
+        println!("Failed to migrate database: {}", error);
         exit(1);
     }
 
@@ -143,9 +149,8 @@ pub async fn run_migration(filename: &Option<String>) -> std::io::Result<()> {
         let mut counter = 2;
         for entry in csv_reader.deserialize() {
             let record: GasInfo = entry?;
-            match database::insert_gas_info(&pool, &record).await {
-                Err(_) => println!("Failed to add entry on line {counter}"),
-                Ok(_) => (),
+            if database::insert_gas_info(&pool, &record).await.is_err() {
+                println!("Failed to add entry on line {counter}");
             }
             counter += 1;
         }
