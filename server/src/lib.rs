@@ -5,10 +5,11 @@ pub mod models;
 use std::{fs::File, io::BufReader, process::exit};
 
 use actix_cors::Cors;
-use actix_web::{App, HttpServer};
+use actix_web::{web, App, HttpServer};
 use clap::{Parser, Subcommand};
 use dotenv::dotenv;
 use models::GasInfo;
+use serde::{Serialize, Deserialize};
 
 /// The commandline arguments allowed for this program
 #[derive(Parser)]
@@ -38,20 +39,42 @@ pub enum Commands {
     },
 }
 
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct VersionInfo {
+    package_name: String,
+    version: String,
+    deploy_time: String,
+}
+
+impl VersionInfo {
+    pub fn new() -> VersionInfo {
+        let time = chrono::offset::Utc::now();
+
+        VersionInfo {
+            package_name: env!("CARGO_PKG_NAME").to_string(),
+            version: env!("CARGO_PKG_VERSION").to_string(),
+            deploy_time: time.to_string(),
+        }
+    }
+}
+
 /// Configures and runs the API.
 pub async fn run_api() -> std::io::Result<()> {
     std::env::set_var("RUST_LOG", "debug");
     env_logger::init();
 
     if let Ok(database) = database::Database::new().await {
-        database::ensure_tables_exist(&database.client, true)
+        database::ensure_tables_exist(&database.client, false)
             .await
             .unwrap();
+
         HttpServer::new(move || {
             let cors = Cors::permissive();
             App::new()
+                .app_data(web::Data::new(VersionInfo::new()))
                 .configure(handlers::config(database.clone()))
                 .service(handlers::index)
+                .service(handlers::version)
                 .wrap(cors)
         })
         .bind(("0.0.0.0", 5000))?

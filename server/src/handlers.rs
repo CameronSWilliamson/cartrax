@@ -4,12 +4,67 @@ use actix_web::{
     Responder,
 };
 use chrono::Utc;
+use serde::{Serialize, Deserialize};
 use std::error::Error;
 
 use crate::{
     database::{self, Database},
-    models::{GasInfo, ResponseMessage, ResponseStatus, ResponseType},
+    models::GasInfo, VersionInfo,
 };
+
+
+/// The structure for every HTTP response
+#[derive(Debug, Serialize, Deserialize, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct ResponseMessage {
+    /// The status of the response
+    pub status: ResponseStatus,
+    /// The data included in the response
+    pub data: ResponseType,
+}
+
+/// The type of data included in a ResponseMessage
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub enum ResponseType {
+    /// A response that contains a string
+    Message(String),
+    /// A response that contains information on gasoline
+    GasInfo(GasInfo),
+    /// A response that contains version info
+    Version(VersionInfo),
+}
+
+impl From<String> for ResponseType {
+    fn from(value: String) -> Self {
+        ResponseType::Message(value)
+    }
+}
+
+impl From<GasInfo> for ResponseType {
+    fn from(value: GasInfo) -> Self {
+        ResponseType::GasInfo(value)
+    }
+}
+
+impl From<VersionInfo> for ResponseType {
+    fn from(value: VersionInfo) -> Self {
+        ResponseType::Version(value)       
+    }
+}
+
+/// The status of an HTTP response
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub enum ResponseStatus {
+    /// Request succeeded
+    Success,
+    /// Request failed
+    Failure,
+}
+
+#[get("/version")]
+async fn version(data: web::Data<VersionInfo>) -> impl Responder {
+    web::Json(data.into_inner())
+}
 
 #[get("/")]
 async fn index() -> impl Responder {
