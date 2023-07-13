@@ -7,6 +7,7 @@ use std::{fs::File, io::BufReader, process::exit};
 use actix_cors::Cors;
 use actix_web::{App, HttpServer};
 use clap::{Parser, Subcommand};
+use dotenv::dotenv;
 use models::GasInfo;
 
 /// The commandline arguments allowed for this program
@@ -43,7 +44,9 @@ pub async fn run_api() -> std::io::Result<()> {
     env_logger::init();
 
     if let Ok(database) = database::Database::new().await {
-        database::ensure_tables_exist(&database.client, true).await.unwrap();
+        database::ensure_tables_exist(&database.client, true)
+            .await
+            .unwrap();
         HttpServer::new(move || {
             let cors = Cors::permissive();
             App::new()
@@ -128,3 +131,39 @@ pub async fn run_migration(filename: &Option<String>) -> std::io::Result<()> {
     Ok(())
 }
 
+pub struct Environment {
+    db_hostname: String,
+    db_username: String,
+    db_password: String,
+    db_database: String,
+}
+
+impl Environment {
+    fn new() -> Environment {
+        dotenv().ok();
+
+        Environment {
+            db_hostname: Environment::parse_var("DB_HOSTNAME"),
+            db_username: Environment::parse_optional_var("DB_USERNAME", "postgres"),
+            db_password: Environment::parse_var("DB_PASSWORD"),
+            db_database: Environment::parse_var("DB_DATABASE"),
+        }
+    }
+
+    fn parse_var(value: &str) -> String {
+        if let Ok(env_var) = std::env::var(value) {
+            env_var
+        } else {
+            println!("Unable to find environment variable \"{}\"", value);
+            exit(1);
+        }
+    }
+
+    fn parse_optional_var(value: &str, default: &str) -> String {
+        if let Ok(env_var) = std::env::var(value) {
+            env_var
+        } else {
+            default.to_string()
+        }
+    }
+}

@@ -7,7 +7,7 @@ use chrono::Utc;
 use std::error::Error;
 
 use crate::{
-    database::{Database, self},
+    database::{self, Database},
     models::{GasInfo, ResponseMessage, ResponseStatus, ResponseType},
 };
 
