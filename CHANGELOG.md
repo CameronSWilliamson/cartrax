@@ -11,13 +11,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- `sheets_to_db` script incorrectly parsed data
+- `sheets_to_db` script incorrectly parsing data.
+
+### Added
+
+- Relevant HTML title name.
+- Relevant HTML favicon.
 
 ## [0.3.1] - 07.13.2023
 
 ### Fixed
 
-- Unable to run docker-compose due to invalid syntax and environment variables
+- Unable to run docker-compose due to invalid syntax and environment variables.
 
 ## [0.3.0] - 07.13.2023
 
@@ -37,8 +42,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Statistics View and Endpoint
+- Statistics View and Endpoint.
 
 ## [0.1.0] - 07.13.2023
 
-- Initial Release
+- Initial Release.
