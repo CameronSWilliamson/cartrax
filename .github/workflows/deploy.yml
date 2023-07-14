@@ -71,6 +71,6 @@ jobs:
             docker load -i /tmp/server.tar 
             docker load -i /tmp/client.tar
             cd ~/cartrax
-            docker-compose down
-            docker-compose up -f docker-compose.yml -f docker-compose.prod.yml -d
+            docker-compose -f docker-compose.yml -f docker-compose.prod.yml down
+            docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d
       
