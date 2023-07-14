@@ -1,0 +1,10 @@
+version: '3'
+
+services:
+  server:
+    env_file:
+      - .env
+
+  postgres:
+    env_file:
+      - .env

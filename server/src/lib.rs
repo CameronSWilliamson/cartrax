@@ -5,9 +5,11 @@ pub mod models;
 use std::{fs::File, io::BufReader, process::exit};
 
 use actix_cors::Cors;
-use actix_web::{App, HttpServer};
+use actix_web::{web, App, HttpServer};
 use clap::{Parser, Subcommand};
+use dotenv::dotenv;
 use models::GasInfo;
+use serde::{Deserialize, Serialize};
 
 /// The commandline arguments allowed for this program
 #[derive(Parser)]
@@ -37,18 +39,48 @@ pub enum Commands {
     },
 }
 
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct VersionInfo {
+    package_name: String,
+    version: String,
+    deploy_time: String,
+}
+
+impl VersionInfo {
+    pub fn new() -> VersionInfo {
+        let time = chrono::offset::Utc::now();
+
+        VersionInfo {
+            package_name: env!("CARGO_PKG_NAME").to_string(),
+            version: env!("CARGO_PKG_VERSION").to_string(),
+            deploy_time: time.to_string(),
+        }
+    }
+}
+
+impl Default for VersionInfo {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 /// Configures and runs the API.
 pub async fn run_api() -> std::io::Result<()> {
     std::env::set_var("RUST_LOG", "debug");
     env_logger::init();
 
     if let Ok(database) = database::Database::new().await {
-        database::ensure_tables_exist(&database.client, true).await.unwrap();
+        database::ensure_tables_exist(&database.client, false)
+            .await
+            .unwrap();
+
         HttpServer::new(move || {
             let cors = Cors::permissive();
             App::new()
+                .app_data(web::Data::new(VersionInfo::new()))
                 .configure(handlers::config(database.clone()))
                 .service(handlers::index)
+                .service(handlers::version)
                 .wrap(cors)
         })
         .bind(("0.0.0.0", 5000))?
@@ -69,7 +101,7 @@ pub async fn run_api() -> std::io::Result<()> {
 pub async fn run_backup(filename: &String) -> std::io::Result<()> {
     let pool = database::new().await;
     if let Err(error) = pool {
-        println!("Failed to connect to database: {}", error.to_string());
+        println!("Failed to connect to database: {}", error);
         exit(1);
     }
     let pool = pool.unwrap();
@@ -79,7 +111,7 @@ pub async fn run_backup(filename: &String) -> std::io::Result<()> {
         .fetch_all(&pool)
         .await;
     if let Err(error) = detail_list {
-        println!("Failed to fetch data: {}", error.to_string());
+        println!("Failed to fetch data: {}", error);
         exit(1);
     }
     for entry in detail_list.unwrap() {
@@ -99,14 +131,14 @@ pub async fn run_backup(filename: &String) -> std::io::Result<()> {
 pub async fn run_migration(filename: &Option<String>) -> std::io::Result<()> {
     let pool = database::new().await;
     if let Err(error) = pool {
-        println!("Failed to connect to database: {}", error.to_string());
+        println!("Failed to connect to database: {}", error);
         exit(1);
     }
     let pool = pool.unwrap();
 
     let tables_created = database::ensure_tables_exist(&pool, true).await;
     if let Err(error) = tables_created {
-        println!("Failed to migrate database: {}", error.to_string());
+        println!("Failed to migrate database: {}", error);
         exit(1);
     }
 
@@ -117,9 +149,8 @@ pub async fn run_migration(filename: &Option<String>) -> std::io::Result<()> {
         let mut counter = 2;
         for entry in csv_reader.deserialize() {
             let record: GasInfo = entry?;
-            match database::insert_gas_info(&pool, &record).await {
-                Err(_) => println!("Failed to add entry on line {counter}"),
-                Ok(_) => (),
+            if database::insert_gas_info(&pool, &record).await.is_err() {
+                println!("Failed to add entry on line {counter}");
             }
             counter += 1;
         }
@@ -128,3 +159,39 @@ pub async fn run_migration(filename: &Option<String>) -> std::io::Result<()> {
     Ok(())
 }
 
+pub struct Environment {
+    db_hostname: String,
+    db_username: String,
+    db_password: String,
+    db_database: String,
+}
+
+impl Environment {
+    fn new() -> Environment {
+        dotenv().ok();
+
+        Environment {
+            db_hostname: Environment::parse_var("DB_HOSTNAME"),
+            db_username: Environment::parse_optional_var("DB_USERNAME", "postgres"),
+            db_password: Environment::parse_var("DB_PASSWORD"),
+            db_database: Environment::parse_var("DB_DATABASE"),
+        }
+    }
+
+    fn parse_var(value: &str) -> String {
+        if let Ok(env_var) = std::env::var(value) {
+            env_var
+        } else {
+            println!("Unable to find environment variable \"{}\"", value);
+            exit(1);
+        }
+    }
+
+    fn parse_optional_var(value: &str, default: &str) -> String {
+        if let Ok(env_var) = std::env::var(value) {
+            env_var
+        } else {
+            default.to_string()
+        }
+    }
+}

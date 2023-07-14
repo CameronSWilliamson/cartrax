@@ -1,7 +1,9 @@
-use crate::models::{GasInfo, GasInfoStats};
+use crate::{
+    models::{GasInfo, GasInfoStats},
+    Environment,
+};
 use bigdecimal::BigDecimal;
 use sqlx::{postgres::PgPoolOptions, Postgres};
-use std::{env, process::exit};
 
 /// The Arctix Database
 #[derive(Clone)]
@@ -28,22 +30,11 @@ type Result<T> = std::result::Result<T, sqlx::Error>;
 ///
 /// * `force` - Whether or not all operations on the DataPool should be forced
 pub async fn new() -> Result<Pool> {
-    let server_name = env::var("DB_NAME");
-    let username = env::var("DB_USERNAME");
-    let password = env::var("DB_PASSWORD");
-    let database = env::var("DB_DATABASE");
-
-    if server_name.is_err() || username.is_err() || password.is_err() || database.is_err() {
-        println!("Something went wrong parsing database environment variables");
-        exit(1);
-    }
+    let env = Environment::new();
 
     let conn_string = format!(
         "postgres://{}:{}@{}/{}",
-        username.unwrap(),
-        password.unwrap(),
-        server_name.unwrap(),
-        database.unwrap()
+        env.db_username, env.db_password, env.db_hostname, env.db_database
     );
 
     let pool = PgPoolOptions::new()
@@ -118,8 +109,8 @@ pub async fn insert_gas_info(pool: &Pool, gas_info: &GasInfo) -> Result<i32> {
     .bind(&gas_info.gallons)
     .bind(&gas_info.a_tripometer)
     .bind(&gas_info.b_tripometer)
-    .bind(&gas_info.total_tripometer)
-    .bind(&gas_info.time_recorded)
+    .bind(gas_info.total_tripometer)
+    .bind(gas_info.time_recorded)
     .bind(&gas_info.city)
     .bind(&gas_info.state)
     .fetch_one(pool)
@@ -177,6 +168,6 @@ pub async fn ensure_tables_exist(pool: &Pool, force: bool) -> Result<()> {
         state TEXT NOT NULL
         ";
 
-    create_table(&pool, "cartrax", fields, force).await?;
+    create_table(pool, "cartrax", fields, force).await?;
     Ok(())
 }

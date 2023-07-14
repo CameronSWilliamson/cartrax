@@ -8,7 +8,7 @@ async fn main() -> std::io::Result<()> {
 
     let mut cli = Cli::parse();
 
-    if let None = &cli.command {
+    if cli.command.is_none() {
         cli.command = Some(Commands::Api {})
     }
 

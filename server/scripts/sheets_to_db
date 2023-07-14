@@ -1,0 +1,52 @@
+#!/usr/bin/env python3
+
+import sys
+import csv
+
+def usage():
+    usage_text = """Parses a CSV from Readable Excel to CSV parsable by the migration script
+
+\033[4m\033[1mUsage\033[0m: \033[1msheets_to_db\033[0m [INPUT_FILENAME] [OUTPUT_FILENAME]
+
+\033[4m\033[1mArguments\033[0m:
+    [INPUT_FILENAME]: The file to read from
+    [OUTPUT_FILENAME]: The file to store the parsed csv in. Defaults to out.csv
+
+\033[4m\033[1mOptions\033[0m:
+  \033[1m-h\033[0m, \033[1m--help\033[0m     Print help"""
+    print(usage_text)
+    exit(0)
+
+if len(sys.argv) < 2:
+    print("No file provided")
+    exit(1)
+if len(sys.argv) == 2:
+    if sys.argv[-1] == "--help" or sys.argv[-1] == '-h':
+        usage()
+    outfile = "out.csv"
+elif len(sys.argv) == 3:
+    outfile = sys.argv[-1]
+else:
+    print("Too many files provided")
+    exit(1)
+
+parsed_data = []
+
+with open(file=sys.argv[1]) as infile:
+    file = csv.reader(infile)
+
+    for index, row in enumerate(file):
+        if index == 0:
+            row = [item.lower() for item in row]
+        else:
+            row[0] = row[0].replace("$", "")
+            row[1] = row[1].replace("$", "")
+            date = dict(zip(["month", "day", "year"], row[-3].split(".")))
+
+            datestr = f"20{date['year']}-{date['month']}-{date['day']}T14:30:00Z"
+            row[-3] = datestr
+        parsed_data.append(row)
+
+with open(outfile, 'w', encoding='utf-8') as out:
+    writer = csv.writer(out)
+    writer.writerows(parsed_data)
