@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- `sheets_to_db` script incorrectly parsed data
+
 ## [0.3.1] - 07.13.2023
 
 ### Fixed

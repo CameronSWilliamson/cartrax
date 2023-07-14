@@ -3,50 +3,78 @@
 import sys
 import csv
 
+
 def usage():
-    usage_text = """Parses a CSV from Readable Excel to CSV parsable by the migration script
-
-\033[4m\033[1mUsage\033[0m: \033[1msheets_to_db\033[0m [INPUT_FILENAME] [OUTPUT_FILENAME]
-
-\033[4m\033[1mArguments\033[0m:
-    [INPUT_FILENAME]: The file to read from
-    [OUTPUT_FILENAME]: The file to store the parsed csv in. Defaults to out.csv
-
-\033[4m\033[1mOptions\033[0m:
-  \033[1m-h\033[0m, \033[1m--help\033[0m     Print help"""
-    print(usage_text)
+    print("Parses a CSV from Readable Excel to CSV parsable by the migration script")
+    print("Usage: sheets_to_db [INPUT_FILENAME] [OUTPUT_FILENAME]")
+    print()
+    print("Arguments:")
+    print("    [INPUT_FILENAME]: The file to read from")
+    print(
+        "    [OUTPUT_FILENAME]: The file to store the parsed csv in. Defaults to out.csv"
+    )
+    print()
+    print("Options:")
+    print("  -h, --help     Print help")
+    print()
     exit(0)
 
-if len(sys.argv) < 2:
-    print("No file provided")
-    exit(1)
-if len(sys.argv) == 2:
-    if sys.argv[-1] == "--help" or sys.argv[-1] == '-h':
-        usage()
-    outfile = "out.csv"
-elif len(sys.argv) == 3:
-    outfile = sys.argv[-1]
-else:
-    print("Too many files provided")
-    exit(1)
 
-parsed_data = []
+def parse_header(row: list[str]) -> list[str]:
+    new_row = []
+    for item in row:
+        item_as_arr = [i.capitalize() for i in item.split(" ")]
+        print(item_as_arr)
+        item_as_arr[0] = item_as_arr[0].lower()
+        new_row.append("".join(item_as_arr))
+    return new_row
 
-with open(file=sys.argv[1]) as infile:
-    file = csv.reader(infile)
 
-    for index, row in enumerate(file):
-        if index == 0:
-            row = [item.lower() for item in row]
-        else:
-            row[0] = row[0].replace("$", "")
-            row[1] = row[1].replace("$", "")
-            date = dict(zip(["month", "day", "year"], row[-3].split(".")))
+def parse_row(row: list[str]) -> list[str]:
+    row[0] = row[0].replace("$", "")
+    row[1] = row[1].replace("$", "")
+    date = dict(zip(["month", "day", "year"], row[-3].split(".")))
+    datestr = f"20{date['year']}-{date['month']}-{date['day']}T14:30:00Z"
+    row[-3] = datestr
+    return row
 
-            datestr = f"20{date['year']}-{date['month']}-{date['day']}T14:30:00Z"
-            row[-3] = datestr
-        parsed_data.append(row)
 
-with open(outfile, 'w', encoding='utf-8') as out:
-    writer = csv.writer(out)
-    writer.writerows(parsed_data)
+def read_file(filename: str) -> list[list]:
+    parsed_data = []
+    with open(filename) as infile:
+        file = csv.reader(infile)
+        for index, row in enumerate(file):
+            if index == 0:
+                row = parse_header(row)
+            else:
+                row = parse_row(row)
+            parsed_data.append(row)
+    return parsed_data
+
+
+def write_file(filename: str, table: list[list]) -> None:
+    with open(filename, "w", encoding="utf-8") as out:
+        writer = csv.writer(out)
+        writer.writerows(table)
+
+
+def main():
+    if len(sys.argv) < 2:
+        print("No file provided")
+        exit(1)
+    if len(sys.argv) == 2:
+        if sys.argv[-1] == "--help" or sys.argv[-1] == "-h":
+            usage()
+        outfile = "out.csv"
+    elif len(sys.argv) == 3:
+        outfile = sys.argv[-1]
+    else:
+        print("Too many files provided")
+        exit(1)
+    data = read_file(sys.argv[1])
+    write_file(outfile, data)
+    print(f"Successfully parsed {sys.argv[1]}. Wrote to {outfile}")
+
+
+if __name__ == "__main__":
+    main()
