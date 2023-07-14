@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.1] - 07.13.2023
+
+### Fixed
+
+- Unable to run docker-compose due to invalid syntax and environment variables
+
 ## [0.3.0] - 07.13.2023
 
 ### Added

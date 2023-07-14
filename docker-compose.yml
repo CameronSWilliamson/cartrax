@@ -8,7 +8,6 @@ services:
     restart: on-failure
     depends_on:
       - postgres
-    environment:
 
   postgres:
     image: "postgres"
