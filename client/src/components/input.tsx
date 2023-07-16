@@ -97,7 +97,7 @@ function GasInfoInput(props: Props) {
                             </li>
                             <li className="form-row">
                                 <label>State</label>
-                                <select name="state" id="state">
+                                <select name="state" id="state" onChange={(e) => {setState(e.target.value)}}>
                                     {StateMap.map((item, key) => {
                                         if (item.abbreviation == "MT") {
                                             return <><option selected value={item.abbreviation} key={key}>{item.name}</option></>
