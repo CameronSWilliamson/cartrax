@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Relevant HTML favicon.
 - State input is now a dropdown menu.
 - Adminer and migration to developer docker-compose.
+- Makefile for easier building.
 
 ## [0.3.1] - 07.13.2023
 
