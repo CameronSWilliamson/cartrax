@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { GasInfo, GasInfoConversions } from "../utils/gasInfo";
+import StateMap from "../../public/states.json";
 
 interface Props {
-    update: (_: GasInfo) => void
+    update: (_: GasInfo) => void;
 }
 
 function GasInfoInput(props: Props) {
@@ -58,7 +59,7 @@ function GasInfoInput(props: Props) {
                 if (res.status != 200) res.text().then(console.log);
             })
             .catch(console.log);
-        props.update(gasInfo)
+        props.update(gasInfo);
         event?.preventDefault();
     };
 
@@ -96,16 +97,19 @@ function GasInfoInput(props: Props) {
                             </li>
                             <li className="form-row">
                                 <label>State</label>
-                                <input
-                                    onChange={(e) => setState(e.target.value)}
-                                />
+                                <select name="state" id="state">
+                                    {StateMap.map((item, key) => {
+                                        if (item.abbreviation == "MT") {
+                                            return <><option selected value={item.abbreviation} key={key}>{item.name}</option></>
+                                        }
+                                        return <><option value={item.abbreviation} key={key}>{item.name}</option></>
+                                    })}
+                                </select>
                             </li>
                         </>
                     )}
                 </ul>
-                <button type="submit">
-                    Submit
-                </button>
+                <button type="submit">Submit</button>
             </form>
             <br />
         </div>
