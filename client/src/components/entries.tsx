@@ -31,9 +31,8 @@ function Entries(props: { entries: Array<GasInfo> }) {
     );
 }
 
-
 function Entry(props: { gasEntry: GasInfo; now: Date }) {
-    const timeStr =computeDateString(props.gasEntry.timeRecorded, props.now)
+    const timeStr = computeDateString(props.gasEntry.timeRecorded, props.now);
     return (
         <tr>
             <td data-cell="price per gallon">

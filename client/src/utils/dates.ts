@@ -5,7 +5,7 @@ export function isDST(d: Date): boolean {
 }
 
 export function computeDateString(t: Date, now: Date = new Date()): string {
-    let timeStr = `${t.getMonth() + 1}/${t.getDay()}/${t.getFullYear()}`;
+    let timeStr = `${t.getMonth() + 1}/${t.getDate()}/${t.getFullYear()}`;
     
 
     const nowIsDst = isDST(now);
@@ -18,5 +18,11 @@ export function computeDateString(t: Date, now: Date = new Date()): string {
         hours--;
     }
 
-    return `${timeStr} ${hours}:${t.getMinutes()}`;
+    let minutes = t.getMinutes().toString()
+
+    if (minutes.length == 1) {
+        minutes = '0' + minutes
+    }
+
+    return `${timeStr} ${hours}:${minutes}`;
 }

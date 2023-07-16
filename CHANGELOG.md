@@ -12,6 +12,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - `sheets_to_db` script incorrectly parsing data.
+- Client dates incorrectly showing day # instead of date #.
+- Client dates not showing a 0 if the minutes were less than 10.
 
 ### Added
 
